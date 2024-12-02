@@ -1,0 +1,35 @@
+{
+  "compilerOptions": {
+    "baseUrl": "./",
+    "paths": {
+      "@assets/*": ["src/assets/*"],
+      "@middlewares/*": ["src/middlewares/*"],
+      "@repositories/*": ["src/repositories/*"],
+      "@routers/*": ["src/routers/*"],
+      "@schemas/*": ["src/schemas/*"],
+      "@services/*": ["src/services/*"],
+    },
+    "typeRoots": [
+      "./node_modules/@types",
+      "./src/assets/types"
+    ],
+    "types": [
+      "node",
+      "alias",
+      "extension",
+    ],
+  },
+  "include": [
+    "index.ts",
+    "src/**/*",
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.d.ts",
+    "**/*.js",
+    "**/*.jsx",
+  ],
+  "exclude": [
+    "node_modules",
+    "**/*.spec.ts",
+  ],
+}
