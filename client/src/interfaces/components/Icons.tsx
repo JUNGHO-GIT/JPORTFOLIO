@@ -1,6 +1,6 @@
 // Icons.tsx
 
-import { React } from "@importReacts";
+import { React, JSX } from "@importReacts";
 import { IconButton } from "@importMuis";
 
 // -------------------------------------------------------------------------------------------------

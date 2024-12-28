@@ -51,7 +51,7 @@ export const Project4 = () => {
     });
   }, [URL, PROJECTS_URL]);
 
-  // 7. projects ------------------------------------------------------------------------------------
+  // 7. projects -----------------------------------------------------------------------------------
   const projectNode = () => (
     <Paper className={`detail-wrapper ${paperClass} border-0 radius-0 shadow-0`}>
       {/** images **/}

@@ -3,7 +3,6 @@
 import { useEffect, useState } from "@importReacts";
 import { useResponsive, useCommonValue } from "@importHooks";
 import { useStoreAlert } from "@importStores";
-import { setSession } from "@importScripts";
 import { axios } from "@importLibs";
 import { Div, Img, Hr, Br, Grid, Paper } from "@importComponents";
 
@@ -148,7 +147,7 @@ export const Portfolios = () => {
                     group={"icons"}
                     className={"mr-5px"}
                   />
-                  <Div className={"fs-1-6rem fw-700 white ls-4"}>
+                  <Div className={"fs-1-6rem fw-700 white ls-4-0"}>
                     {item?.portfolios_section_name}
                   </Div>
                 </Div>
