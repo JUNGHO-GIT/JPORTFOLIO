@@ -66,7 +66,7 @@ createRoot(document.getElementById('root') as HTMLElement).render(
     <ThemeProvider theme={
       createTheme({
         typography:{
-          fontFamily: "'Pretendard Variable', Pretendard, 'Font Awesome 5 Brands', 'Font Awesome 5 Free', 'Font Awesome 5', 'Font Awesome 4 Brands', 'Font Awesome 4 Free', 'Font Awesome 4', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif !important"
+          fontFamily: "'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', sans-serif !important"
         },
       })
     }>
