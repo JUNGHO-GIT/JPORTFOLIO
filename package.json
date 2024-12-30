@@ -60,6 +60,7 @@
     "request-promise": "^4.2.6"
   },
   "devDependencies": {
+    "@types/node": "^22.10.2",
     "@types/bcryptjs": "^2.4.6",
     "@types/cors": "^2.8.17",
     "@types/express-session": "^1.18.1",

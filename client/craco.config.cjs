@@ -169,16 +169,8 @@ module.exports = {
             algorithm: 'brotliCompress',
             threshold: 10240,
             minRatio: 0.8,
-          }),
-          new CompressionPlugin({
-            filename: '[path][base].gz',
-            test: /\.(js|css|html|svg)$/,
-            algorithm: 'gzip',
-            threshold: 10240,
-            minRatio: 0.8,
-          }),
+          })
         );
-
       }
 
       // 4. return ---------------------------------------------------------------------------------
