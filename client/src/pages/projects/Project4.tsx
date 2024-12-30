@@ -187,7 +187,7 @@ export const Project4 = () => {
                         {contents.project_contents_title}
                       </Div>
                     </Div>
-                    <Grid container={true} spacing={0} className={"d-left ml-1vw"}>
+                    <Grid container={true} spacing={0} rowSpacing={2} className={"d-left ml-1vw"}>
                       {contents.project_contents_detail.map((detail: any, k: number) => (
                         <Grid
                           size={xxs ? 6 : xs ? 4 : sm ? 3 : md ? 4 : lg ? 4 : xl ? 3 : xxl ? 3 : 3}

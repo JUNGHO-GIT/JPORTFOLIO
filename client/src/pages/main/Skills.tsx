@@ -109,11 +109,11 @@ export const Skills = () => {
                 </Grid>
               </AccordionSummary>
               <AccordionDetails>
-                <Grid container={true} spacing={0} className={"d-left"}>
+                    <Grid container={true} spacing={0} rowSpacing={3} className={"d-left"}>
                   {item.skills_section_sub.map((sub: any, j: number) => (
                     <Grid
                       size={xxs ? 6 : xs ? 4 : sm ? 3 : md ? 4 : lg ? 4 : xl ? 3 : xxl ? 3 : 3}
-                      className={"d-row-left mb-10px"}
+                      className={"d-row-left"}
                       key={j}
                     >
                       <Div className={"d-center mr-5px"}>

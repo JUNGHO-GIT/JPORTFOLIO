@@ -109,6 +109,10 @@ export const Img = (
       src={imgSrc}
       loading={loading || "lazy"}
       className={imageClass}
+      style={{
+        imageRendering: "auto",
+        filter: "contrast(1.1) brightness(1.0)",
+      }}
     />
   );
 
