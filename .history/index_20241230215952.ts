@@ -1,6 +1,5 @@
 // index.ts
 
-import qs from "qs";
 import cors from "cors";
 import mongoose from "mongoose";
 import express from "express";
@@ -47,8 +46,8 @@ const id = process.env.DB_USER;
 const pw = process.env.DB_PASS;
 const host = process.env.DB_HOST;
 const port = process.env.DB_PORT;
-const db = process.env.DB_NAME
-// const db = process.env.DB_TEST
+// const db = process.env.DB_NAME
+const db = process.env.DB_TEST
 const envStr = db === process.env.DB_TEST ? "DEVELOPMENT" : "PRODUCTION";
 
 mongoose.connect(`mongodb://${id}:${pw}@${host}:${port}/${db}`)
@@ -59,8 +58,6 @@ mongoose.connect(`mongodb://${id}:${pw}@${host}:${port}/${db}`)
   console.error(`[${envStr}] MongoDB 연결 실패 [${db}] ${err}`);
 });
 
-// qs 파서 적용 ------------------------------------------------------------------------------------
-app.set('query parser', (str: string) => qs.parse(str));
 
 // 미들웨어 설정 -----------------------------------------------------------------------------------
 app.use(express.json());

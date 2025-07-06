@@ -174,3 +174,5 @@
 **/.gitignore.private.*
 **/.vsix
 **/.vsix.*
+**/.history
+**/.history.*

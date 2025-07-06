@@ -5,6 +5,7 @@ const path = require('path');
 const webpack = require('webpack');
 const CompressionPlugin = require('compression-webpack-plugin');
 const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
+const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
 const { CracoAliasPlugin } = require('react-app-alias');
 const { SwcMinifyWebpackPlugin } = require('swc-minify-webpack-plugin');
 
@@ -31,6 +32,16 @@ module.exports = {
       webpackConfig.module.rules.unshift({
         test: /\.(js|mjs|jsx|ts|tsx)$/,
         use: [
+          {
+            loader: 'thread-loader',
+            options: {
+              workers: os.cpus().length - 1,
+              workerParallelJobs: 75,
+              poolRespawn: false,
+              poolTimeout: 2000,
+              poolParallelJobs: 75
+            },
+          },
           {
             loader: 'babel-loader',
             options: {
@@ -72,6 +83,9 @@ module.exports = {
           historyApiFallback: true,
           overlay: true,
         };
+        webpackConfig.plugins.push(
+          new ReactRefreshWebpackPlugin(),
+        );
       }
 
       // 3. production 설정 ------------------------------------------------------------------------
