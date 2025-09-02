@@ -56,7 +56,7 @@ export const About = () => {
         container={true}
         spacing={2}
         columnSpacing={10}
-        className={"h-100p d-center border-1 radius-2 shadow-1 px-4vw py-4vh mb-1vh"}
+        className={"h-100p d-center border-1 radius-2 shadow-2 px-4vw py-4vh mb-1vh"}
       >
         <Grid size={(xxs || xs || sm) ? 12 : (md || lg || xl || xxl) ? 6 : 6}>
           <Img

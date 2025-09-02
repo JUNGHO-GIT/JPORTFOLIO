@@ -19,7 +19,7 @@ import {
   FormControl, FormControlLabel, FormGroup,
 
   // g
-  Grid2 as Grid, GlobalStyles,
+  Grid, GlobalStyles,
 
   // h - kS
   InputAdornment, InputBase, InputLabel, IconButton,
@@ -48,7 +48,7 @@ import {
 
 // props -------------------------------------------------------------------------------------------
 import type {
-  CardProps, PaperProps, Grid2Props as GridProps
+  CardProps, PaperProps, GridProps
 } from '@mui/material';
 
 // popupState --------------------------------------------------------------------------------------

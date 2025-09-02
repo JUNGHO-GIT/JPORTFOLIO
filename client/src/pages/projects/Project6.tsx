@@ -108,7 +108,7 @@ export const Project6 = () => {
         container={true}
         spacing={2}
         columnSpacing={10}
-        className={"h-100p d-top border-1 radius-2 shadow-1 px-4vw py-4vh"}
+        className={"h-100p d-top border-1 radius-2 shadow-2 px-4vw py-4vh"}
       >
         {/** info, features **/}
         <Grid size={(xxs || xs || sm) ? 12 : (md || lg || xl || xxl) ? 6 : 6}>
@@ -139,6 +139,9 @@ export const Project6 = () => {
                           <Div className={"d-row-left mr-0px"} key={k}>
                             <Div
                               className={"fs-1-0rem fw-600 primary pointer-blue lh-2-0"}
+															style={{
+																textDecoration: "underline",
+															}}
                               onClick={() => {
                                 window.open(`https://${detail.project_detail_value}`, "_blank");
                               }}

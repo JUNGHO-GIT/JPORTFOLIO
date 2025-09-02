@@ -1,6 +1,6 @@
 /*********************************** NOT IMPORTANT ************************************************/
 /** grid **/
-.MuiGrid2-container {
+.MuiGrid-container {
   margin: 0px 0px 0px 0px;
   padding: 0px 0px 0px 0px;
   display: flex;
@@ -9,7 +9,7 @@
   justify-content: center;
   align-items: center;
 }
-.MuiGrid2-root {
+.MuiGrid-root {
   margin: 0px 0px 0px 0px;
   padding: 0px 0px 0px 0px;
 }
