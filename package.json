@@ -1,10 +1,10 @@
 {
   "name": "JPORTFOLIO-server",
   "version": "1.0.0",
-  "main": "index.ts",
-  "type": "module",
-  "license": "MIT",
   "private": true,
+  "type": "module",
+  "main": "index.ts",
+  "license": "Apache-2.0",
   "eslintConfig": {
     "extends": [
       "airbnb-base",
@@ -28,12 +28,12 @@
   },
   "scripts": {
     "start": "tsx watch --clear-screen=false --ignore node_modules index.ts",
-    "gcloud-only-git": "node gcloud.cjs --only-git",
-		"gcloud-full-deploy": "node gcloud.cjs --full-deploy",
-    "npm-reset": "powershell -NoProfile -Command \"try { Stop-Process -Name node -Force -ErrorAction SilentlyContinue } catch {}; Start-Sleep -Milliseconds 200; if (Test-Path 'node_modules') { cmd /c 'rd /s /q \"node_modules\"' } ; if (Test-Path 'package-lock.json') { cmd /c 'del /f /q \"package-lock.json\"' } ; npm install\""
+    "gcloud-deploy": "node .gcloud_deploy.cjs --full-deploy",
+    "pnpm-reset": "pwsh -NoProfile -Command \"try { Stop-Process -Name node -Force -ErrorAction SilentlyContinue } catch {}; Start-Sleep -Milliseconds 200; if (Test-Path 'node_modules') { cmd /c 'rd /s /q \"node_modules\"' } ; if (Test-Path 'package-lock.json') { cmd /c 'del /f /q \"package-lock.json\"' } ; pnpm install\""
   },
   "dependencies": {
     "@google-cloud/storage": "^7.17.0",
+    "@types/react-router-dom": "^5.3.3",
     "ajv": "^8.17.1",
     "ajv-keywords": "^5.1.0",
     "axios": "^1.11.0",
@@ -41,7 +41,7 @@
     "body-parser": "^2.2.0",
     "cors": "^2.8.5",
     "date-fns": "^4.1.0",
-    "dotenv": "^17.2.1",
+    "dotenv": "^17.2.2",
     "express": "^5.1.0",
     "express-session": "^1.18.2",
     "google-auth-library": "^10.3.0",
@@ -55,20 +55,25 @@
     "oauth-signature": "^1.5.0",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
+    "qs": "^6.14.0",
     "request": "^2.88.2",
-    "request-promise": "^4.2.6"
+    "request-promise": "^4.2.6",
+    "stripe": "^18.5.0"
   },
   "devDependencies": {
-    "@types/node": "^24.3.0",
     "@types/bcryptjs": "^3.0.0",
     "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
     "@types/express-session": "^1.18.2",
     "@types/jsdom": "^21.1.7",
     "@types/mocha": "^10.0.10",
     "@types/multer": "^2.0.0",
+    "@types/node": "^24.3.1",
     "@types/nodemailer": "^7.0.1",
     "@types/passport": "^1.0.17",
     "@types/passport-google-oauth20": "^2.0.16",
+    "@types/qs": "^6.14.0",
+    "@types/swiper": "^6.0.0",
     "jsdom": "^26.1.0",
     "tslib": "^2.8.1",
     "tsx": "^4.20.5",

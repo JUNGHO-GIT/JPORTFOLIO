@@ -137,11 +137,13 @@ app.use(`${preFix}/skills`, skillsRouter);
 app.use(`${preFix}/portfolios`, portfoliosRouter);
 app.use(`${preFix}/projects`, projectsRouter);
 
-// 에러 처리 미들웨어 ------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------------------
+// 0. 에러처리 미들웨어
 app.use((err: Error, req: Request, res: Response, next: Function) => {
-  console.error(err.stack);
-  res.status(500).send({
-    status: 500,
-    message: err.message,
-  });
+	console.error(err.stack);
+	// @ts-ignore
+	res.status(500).send({
+		status: 500,
+		message: err.message,
+	});
 });

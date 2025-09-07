@@ -1,19 +1,9 @@
-// ImportLibs.jsx
+// ImportLibs.tsx
 
 import axios from "axios";
 import Typed from "typed.js";
-import { create } from 'zustand';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Pagination } from 'swiper/modules';
-import { Navigation } from 'swiper/modules';
-
-// -------------------------------------------------------------------------------------------------
-export {
-  axios,
-  Typed,
-  create,
-  Swiper,
-  SwiperSlide,
-  Navigation,
-  Pagination
-};
+export { axios, Typed };
+export { create } from 'zustand';
+export { Swiper, SwiperSlide } from 'swiper/react';
+export { Pagination } from 'swiper/modules';
+export { Navigation } from 'swiper/modules';
