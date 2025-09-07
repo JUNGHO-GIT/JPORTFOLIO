@@ -39,8 +39,8 @@
   "scripts": {
     "start": "craco start",
     "build": "craco build",
-    "gcloud-deploy": "node .gcloud_deploy.cjs --full-deploy",
-    "export-autofix": "node .export_autofix.cjs --project tsconfig.json --apply --backup --report .autofix-report.json",
+    "gcloud-deploy": "node .node/gcloud.cjs --full-deploy",
+    "export-autofix": "node .node/autofix.cjs --project tsconfig.json --apply --backup --report .autofix-report.json",
     "pnpm-reset": "pwsh -NoProfile -Command \"try { Stop-Process -Name node -Force -ErrorAction SilentlyContinue } catch {}; Start-Sleep -Milliseconds 200; if (Test-Path 'node_modules') { cmd /c 'rd /s /q \"node_modules\"' } ; if (Test-Path 'package-lock.json') { cmd /c 'del /f /q \"package-lock.json\"' } ; pnpm install\""
   },
   "dependencies": {

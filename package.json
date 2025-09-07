@@ -28,7 +28,7 @@
   },
   "scripts": {
     "start": "tsx watch --clear-screen=false --ignore node_modules index.ts",
-    "gcloud-deploy": "node .gcloud_deploy.cjs --full-deploy",
+    "gcloud-deploy": "node .node/gcloud.cjs --full-deploy",
     "pnpm-reset": "pwsh -NoProfile -Command \"try { Stop-Process -Name node -Force -ErrorAction SilentlyContinue } catch {}; Start-Sleep -Milliseconds 200; if (Test-Path 'node_modules') { cmd /c 'rd /s /q \"node_modules\"' } ; if (Test-Path 'package-lock.json') { cmd /c 'del /f /q \"package-lock.json\"' } ; pnpm install\""
   },
   "dependencies": {
