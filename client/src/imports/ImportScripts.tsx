@@ -1,7 +1,9 @@
 // ImportScripts.tsx
+
+// -------------------------------------------------------------------------------------------------
 export {
-  getLocal,
-  setLocal,
-  getSession,
-  setSession,
+  fnGetLocal,
+  fnSetLocal,
+  fnGetSession,
+  fnSetSession,
 } from "@assets/scripts/storage";

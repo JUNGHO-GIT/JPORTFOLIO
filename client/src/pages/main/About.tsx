@@ -1,13 +1,13 @@
 // About.jsx
 
-import { useEffect, useState } from "@importReacts";
+import { useEffect, useState, memo } from "@importReacts";
 import { useResponsive, useCommonValue } from "@importHooks";
 import { useStoreAlert } from "@importStores";
 import { axios } from "@importLibs";
 import { Div, Img, Hr, Br, Grid, Paper } from "@importComponents";
 
 // -------------------------------------------------------------------------------------------------
-export const About = () => {
+export const About = memo(() => {
 
   // 0. common -------------------------------------------------------------------------------------
   const { URL, ABOUT_URL } = useCommonValue();
@@ -56,7 +56,7 @@ export const About = () => {
         container={true}
         spacing={2}
         columnSpacing={10}
-        className={"h-100p d-center border-1 radius-2 shadow-2 px-4vw py-4vh mb-1vh"}
+        className={"h-100p d-center border-1 radius-2 shadow-1 px-4vw py-4vh mb-1vh"}
       >
         <Grid size={(xxs || xs || sm) ? 12 : (md || lg || xl || xxl) ? 6 : 6}>
           <Img
@@ -105,4 +105,4 @@ export const About = () => {
       {aboutNode()}
     </>
   );
-};
+});

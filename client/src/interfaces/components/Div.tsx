@@ -1,14 +1,14 @@
 // Div.tsx
 
+import { memo } from "@importReacts";
+
 // -------------------------------------------------------------------------------------------------
-export const Div = (props: any) => {
+export const Div = memo((props: any) => {
 
   let childrenEl = props?.children;
 
   if (typeof childrenEl === "string" && props?.max) {
-    childrenEl = (
-      childrenEl.length > props?.max ? childrenEl.slice(0, props?.max) + "..." : childrenEl
-    );
+    childrenEl = childrenEl?.length > props?.max ? childrenEl.slice(0, props?.max) + "..." : childrenEl;
   }
 
   return (
@@ -16,4 +16,4 @@ export const Div = (props: any) => {
       {childrenEl}
     </div>
   );
-};
+});

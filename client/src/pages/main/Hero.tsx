@@ -1,12 +1,12 @@
 // Hero.jsx
 
-import { useState, useRef, useEffect } from "@importReacts";
+import { useState, useRef, useEffect, memo } from "@importReacts";
 import { useResponsive } from "@importHooks";
 import { Typed } from "@importLibs";
 import { Div, Img, Grid, Paper } from "@importComponents";
 
 // -------------------------------------------------------------------------------------------------
-export const Hero = () => {
+export const Hero = memo(() => {
 
   // 0. common -------------------------------------------------------------------------------------
   const { xxs, xs, sm, md, lg, xl, xxl } = useResponsive();
@@ -96,4 +96,4 @@ export const Hero = () => {
       {heroNode()}
     </>
   );
-};
+});

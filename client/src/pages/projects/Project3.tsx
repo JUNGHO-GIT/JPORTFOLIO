@@ -1,13 +1,13 @@
-// Project3.jsx
+// Project3.tsx
 
-import { useEffect, useState } from "@importReacts";
+import { useEffect, useState, memo } from "@importReacts";
 import { useResponsive, useCommonValue } from "@importHooks";
 import { useStoreAlert, useStoreLoading } from "@importStores";
 import { Swiper, SwiperSlide, Navigation, Pagination, axios } from "@importLibs";
-import { Div, Img, Hr, Br, Grid, Paper } from "@importComponents";
+import { Div, Img, Hr, Br, Grid, Paper, Icons } from "@importComponents";
 
 // -------------------------------------------------------------------------------------------------
-export const Project3 = () => {
+export const Project3 = memo(() => {
 
   // 0. common -------------------------------------------------------------------------------------
   const { URL, PROJECTS_URL } = useCommonValue();
@@ -94,8 +94,12 @@ export const Project3 = () => {
                 </Div>
               </SwiperSlide>
             ))}
-            <Div className={"swiper-button-prev"} />
-            <Div className={"swiper-button-next"} />
+            <Div className={"swiper-button-prev d-center pointer"}>
+              <Icons name={"ArrowLeft"} className={"w-20px h-20px"} />
+            </Div>
+            <Div className={"swiper-button-next d-center pointer"}>
+              <Icons name={"ArrowRight"} className={"w-20px h-20px"} />
+            </Div>
           </Swiper>
         </Grid>
         <Grid size={12} className={"d-row-center"}>
@@ -107,7 +111,7 @@ export const Project3 = () => {
         container={true}
         spacing={2}
         columnSpacing={10}
-        className={"h-100p d-top border-1 radius-2 shadow-2 px-4vw py-4vh"}
+        className={"h-100p d-top border-1 radius-2 shadow-1 px-4vw py-4vh"}
       >
         {/** info, features **/}
         <Grid size={(xxs || xs || sm) ? 12 : (md || lg || xl || xxl) ? 6 : 6}>
@@ -229,4 +233,4 @@ export const Project3 = () => {
       {projectNode()}
     </>
   );
-};
+});

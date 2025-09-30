@@ -1,13 +1,13 @@
 // Portfolios.jsx
 
-import { useEffect, useState } from "@importReacts";
+import { useEffect, useState, memo } from "@importReacts";
 import { useResponsive, useCommonValue } from "@importHooks";
 import { useStoreAlert } from "@importStores";
 import { axios } from "@importLibs";
 import { Div, Img, Hr, Br, Grid, Paper } from "@importComponents";
 
 // -------------------------------------------------------------------------------------------------
-export const Portfolios = () => {
+export const Portfolios = memo(() => {
 
   // 0. common -------------------------------------------------------------------------------------
   const { URL, PORTFOLIOS_URL, navigate } = useCommonValue();
@@ -170,4 +170,4 @@ export const Portfolios = () => {
       {portfoliosNode()}
     </>
   );
-};
+});

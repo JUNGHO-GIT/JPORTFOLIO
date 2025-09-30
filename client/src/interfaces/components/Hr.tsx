@@ -1,7 +1,9 @@
 // Hr.tsx
 
+import { memo } from "@importReacts";
+
 // -------------------------------------------------------------------------------------------------
-export const Hr = (props : any) => (
+export const Hr = memo((props : any) => (
   <div
     className={props?.className}
     style={{
@@ -11,4 +13,4 @@ export const Hr = (props : any) => (
       "margin": `${(props?.m / 2) || 0}px 0px`,
     }}
   />
-);
+));

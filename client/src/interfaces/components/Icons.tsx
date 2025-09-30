@@ -1,10 +1,10 @@
 // Icons.tsx
 
-import { React, JSX } from "@importReacts";
 import { IconButton } from "@importMuis";
+import { memo, type JSX } from "@importReacts";
 
 // -------------------------------------------------------------------------------------------------
-export const Icons = (props: any) => {
+export const Icons = memo((props: any) => {
 
   if (!props.name) {
     return null;
@@ -43,16 +43,16 @@ export const Icons = (props: any) => {
         <path d="M5 12l14 0" />
       </svg>
     ),
-    ChevronUp: (
-      <svg {...commonValues}>
-        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-        <path d="M6 15l6 -6l6 6" />
-      </svg>
-    ),
     ChevronDown: (
       <svg {...commonValues}>
         <path stroke="none" d="M0 0h24v24H0z" fill="none" />
         <path d="M6 9l6 6l6 -6" />
+      </svg>
+    ),
+    ChevronUp: (
+      <svg {...commonValues}>
+        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+        <path d="M6 15l6 -6l6 6" />
       </svg>
     ),
     ChevronRight: (
@@ -65,18 +65,6 @@ export const Icons = (props: any) => {
       <svg {...commonValues}>
         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
         <path d="M15 6l-6 6l6 6" />
-      </svg>
-    ),
-    CaretUp: (
-      <svg {...commonValues}>
-        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-        <path d="M11.293 7.293a1 1 0 0 1 1.32 -.083l.094 .083l6 6l.083 .094l.054 .077l.054 .096l.017 .036l.027 .067l.032 .108l.01 .053l.01 .06l.004 .057l.002 .059l-.002 .059l-.005 .058l-.009 .06l-.01 .052l-.032 .108l-.027 .067l-.07 .132l-.065 .09l-.073 .081l-.094 .083l-.077 .054l-.096 .054l-.036 .017l-.067 .027l-.108 .032l-.053 .01l-.06 .01l-.057 .004l-.059 .002h-12c-.852 0 -1.297 -.986 -.783 -1.623l.076 -.084l6 -6z" />
-      </svg>
-    ),
-    CaretDown: (
-      <svg {...commonValues}>
-        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-        <path d="M18 9c.852 0 1.297 .986 .783 1.623l-.076 .084l-6 6a1 1 0 0 1 -1.32 .083l-.094 -.083l-6 -6l-.083 -.094l-.054 -.077l-.054 -.096l-.017 -.036l-.027 -.067l-.032 -.108l-.01 -.053l-.01 -.06l-.004 -.057v-.118l.005 -.058l.009 -.06l.01 -.052l-.032 -.108l-.027 -.067l-.07 -.132l-.065 -.09l-.073 -.081l-.094 -.083l-.077 -.054l-.096 -.054l-.036 -.017l-.067 -.027l-.108 -.032l-.053 -.01l-.06 -.01l-.057 -.004l12.059 -.002z" />
       </svg>
     ),
     CaretLeft: (
@@ -139,15 +127,8 @@ export const Icons = (props: any) => {
         <path d="M13.5 6.5l4 4" />
       </svg>
     ),
-    CirclePlus: (
-      <svg {...commonValues}>
-        <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" />
-        <path d="M9 12h6" />
-        <path d="M12 9v6" />
-      </svg>
-    ),
     Trash: (
-      <svg {...commonValues} fill={"none"}>
+      <svg {...commonValues} fill="none">
         <path stroke="none" d="M0 0h24v24H0z" fill="none" />
         <path d="M4 7l16 0" />
         <path d="M10 11l0 6" />
@@ -256,12 +237,6 @@ export const Icons = (props: any) => {
         <path d="M14 14a5 5 0 0 1 5 5v1a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-1a5 5 0 0 1 5 -5h4z" />
       </svg>
     ),
-    CircleWon: (
-      <svg {...commonValues}>
-        <circle cx="12" cy="12" r="10" stroke="black" strokeWidth="2" fill="none" />
-        <path d="M6 12L8 19L10 12M6 12L4 5M6 12H3M6 12H10M14 12L16 19L18 12M14 12L12 5L10 12M14 12H10M14 12H18M18 12L20 5M18 12H21" />
-      </svg>
-    ),
     Won: (
       <svg {...commonValues}>
         <path d="M6 12L8 19L10 12M6 12L4 5M6 12H3M6 12H10M14 12L16 19L18 12M14 12L12 5L10 12M14 12H10M14 12H18M18 12L20 5M18 12H21" />
@@ -294,38 +269,28 @@ export const Icons = (props: any) => {
         <path d="M13 11v-4a4 4 0 1 1 8 0v4" />
       </svg>
     ),
+    Undo: (
+      <svg {...commonValues}>
+        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+        <path d="M9 14l-4 -4l4 -4" />
+        <path d="M5 10h11a4 4 0 1 1 0 8h-1" />
+      </svg>
+    ),
+    CaretUp: (
+      <svg {...commonValues}>
+        <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+        <path d="M18 14l-6 -6l-6 6h12" />
+      </svg>
+    ),
     Star: (
       <svg {...commonValues}>
         <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
         <path d="M8.243 7.34l-6.38 .925l-.113 .023a1 1 0 0 0 -.44 1.684l4.622 4.499l-1.09 6.355l-.013 .11a1 1 0 0 0 1.464 .944l5.706 -3l5.693 3l.1 .046a1 1 0 0 0 1.352 -1.1l-1.091 -6.355l4.624 -4.5l.078 -.085a1 1 0 0 0 -.633 -1.62l-6.38 -.926l-2.852 -5.78a1 1 0 0 0 -1.794 0l-2.853 5.78z" />
       </svg>
     ),
-    Home: (
-      <svg {...commonValues}>
-        <path d="M5 12l-4 0l11 -9l11 9l-4 0" />
-        <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
-        <path d="M10 12h4v4h-4z" />
-      </svg>
-    ),
-    Click: (
-      <svg {...commonValues}>
-        <path d="M3 12l3 0" />
-        <path d="M12 3l0 3" />
-        <path d="M7.8 7.8l-2.2 -2.2" />
-        <path d="M16.2 7.8l2.2 -2.2" />
-        <path d="M7.8 16.2l-2.2 2.2" />
-        <path d="M12 12l9 3l-4 2l-2 4l-3 -9" />
-      </svg>
-    ),
-    Undo: (
-      <svg {...commonValues} strokeWidth="3">
-        <path d="M9 14l-4 -4l4 -4" />
-        <path d="M5 10h11a4 4 0 1 1 0 8h-1" />
-      </svg>
-    ),
   };
 
-  const IconComponent = icons[props.name] || React.Fragment;
+  const IconComponent = icons[props.name] || null;
 
   // ---------------------------------------------------------------------------------------------->
   return (
@@ -333,8 +298,11 @@ export const Icons = (props: any) => {
       {...props}
       component={"div"}
       className={""}
+      onClick={(e: React.MouseEvent) => {
+				props?.onClick && props?.onClick(e);
+      }}
     >
       {IconComponent}
     </IconButton>
   );
-};
+});

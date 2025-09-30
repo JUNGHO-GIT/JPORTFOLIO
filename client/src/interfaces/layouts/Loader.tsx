@@ -1,10 +1,11 @@
 // Loader.tsx
 
 import { useStoreLoading } from "@importStores";
+import { memo } from "@importReacts";
 import { Div } from "@importComponents";
 
 // -------------------------------------------------------------------------------------------------
-export const Loader = () => {
+export const Loader = memo(() => {
 
   // 1. common -------------------------------------------------------------------------------------
   const { LOADING } = useStoreLoading();
@@ -26,4 +27,4 @@ export const Loader = () => {
       {loaderNode()}
     </>
   );
-};
+});

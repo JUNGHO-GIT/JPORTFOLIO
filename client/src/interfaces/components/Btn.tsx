@@ -1,9 +1,10 @@
 // Btn.tsx
 
 import { Button } from "@importMuis";
+import { memo } from "@importReacts";
 
 // -------------------------------------------------------------------------------------------------
-export const Btn = (props: any) => (
+export const Btn = memo((props: any) => (
   <Button
     {...props}
     size={props?.size || "small"}
@@ -11,4 +12,4 @@ export const Btn = (props: any) => (
     variant={props?.variant || "contained"}
     style={{...props?.style}}
   />
-);
+));

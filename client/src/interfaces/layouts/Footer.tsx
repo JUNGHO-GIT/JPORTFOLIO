@@ -1,12 +1,12 @@
 // Footer.tsx
 
-import { useState, useEffect } from "@importReacts";
+import { useState, useEffect, memo } from "@importReacts";
 import { useCommonValue, useResponsive } from "@importHooks";
 import { axios } from "@importLibs";
 import { Div, Img, Grid, Paper } from "@importComponents";
 
 // -------------------------------------------------------------------------------------------------
-export const Footer = () => {
+export const Footer = memo(() => {
 
   // 0. common -------------------------------------------------------------------------------------
   const { URL } = useCommonValue();
@@ -86,4 +86,4 @@ export const Footer = () => {
       {footerNode()}
     </>
   );
-};
+});

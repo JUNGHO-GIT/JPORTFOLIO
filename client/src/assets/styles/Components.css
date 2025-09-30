@@ -28,7 +28,12 @@
 }
 .swiper-button-next::after,
 .swiper-button-prev::after {
-  font-size: 15px;
+  display: none;
+}
+.swiper-button-next svg,
+.swiper-button-prev svg {
+  fill: #fff;
+  stroke: #fff;
 }
 @keyframes pulse {
   0% {

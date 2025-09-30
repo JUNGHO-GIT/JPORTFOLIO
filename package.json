@@ -17,39 +17,49 @@
       "no-console": "off",
       "no-underscore-dangle": "off",
       "no-unused-vars": "off",
+      "react-hooks/exhaustive-deps": "off",
+      "react-hooks/rules-of-hooks": "warn",
       "@typescript-eslint/no-unused-vars": [
-        "warn",
+        "off",
         {
-          "argsIgnorePattern": "^_",
-          "varsIgnorePattern": "^_"
+          "varsIgnorePattern": "^_",
+          "argsIgnorePattern": "^_"
         }
-      ]
+      ],
+      "@typescript-eslint/no-unused-expressions": "off"
     }
   },
+	"engines": {
+		"node": "16.x"
+	},
+	"overrides": {
+		"webidl-conversions": "6.1.0",
+		"whatwg-url": "12.0.1"
+	},
   "scripts": {
     "start": "tsx watch --clear-screen=false --ignore node_modules index.ts",
     "gcloud-deploy": "node .node/gcloud.cjs --full-deploy",
     "pnpm-reset": "pwsh -NoProfile -Command \"try { Stop-Process -Name node -Force -ErrorAction SilentlyContinue } catch {}; Start-Sleep -Milliseconds 200; if (Test-Path 'node_modules') { cmd /c 'rd /s /q \"node_modules\"' } ; if (Test-Path 'package-lock.json') { cmd /c 'del /f /q \"package-lock.json\"' } ; pnpm install\""
   },
   "dependencies": {
-    "@google-cloud/storage": "^7.17.0",
+    "@google-cloud/storage": "^7.17.1",
     "@types/react-router-dom": "^5.3.3",
     "ajv": "^8.17.1",
     "ajv-keywords": "^5.1.0",
-    "axios": "^1.11.0",
+    "axios": "^1.12.2",
     "bcryptjs": "^3.0.2",
     "body-parser": "^2.2.0",
     "cors": "^2.8.5",
     "date-fns": "^4.1.0",
-    "dotenv": "^17.2.2",
+    "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "express-session": "^1.18.2",
-    "google-auth-library": "^10.3.0",
+    "google-auth-library": "^10.3.1",
     "jsonwebtoken": "^9.0.2",
     "module-alias": "^2.2.3",
     "moment-timezone": "^0.6.0",
-    "mongodb": "^6.19.0",
-    "mongoose": "^8.18.0",
+    "mongodb": "^6.20.0",
+    "mongoose": "^8.18.3",
     "multer": "^2.0.2",
     "nodemailer": "^7.0.6",
     "oauth-signature": "^1.5.0",
@@ -65,18 +75,18 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "@types/express-session": "^1.18.2",
-    "@types/jsdom": "^21.1.7",
+    "@types/jsdom": "^27.0.0",
     "@types/mocha": "^10.0.10",
     "@types/multer": "^2.0.0",
-    "@types/node": "^24.3.1",
-    "@types/nodemailer": "^7.0.1",
+    "@types/node": "^24.6.0",
+    "@types/nodemailer": "^7.0.2",
     "@types/passport": "^1.0.17",
     "@types/passport-google-oauth20": "^2.0.16",
     "@types/qs": "^6.14.0",
     "@types/swiper": "^6.0.0",
-    "jsdom": "^26.1.0",
+    "jsdom": "^27.0.0",
     "tslib": "^2.8.1",
-    "tsx": "^4.20.5",
+    "tsx": "^4.20.6",
     "typescript": "^5.9.2"
   }
 }

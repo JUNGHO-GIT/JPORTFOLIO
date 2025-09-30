@@ -1,12 +1,12 @@
 // Main.jsx
 
-import { useEffect } from "@importReacts";
+import { useEffect, memo } from "@importReacts";
 import { useStoreLoading } from "@importStores";
 import { About, Hero, Portfolios, Skills } from "@importPages";
 import { Br } from "@importComponents";
 
 // -------------------------------------------------------------------------------------------------
-export const Main = () => {
+export const Main = memo(() => {
 
   // 0. common -------------------------------------------------------------------------------------
   const { setLOADING } = useStoreLoading();
@@ -31,4 +31,4 @@ export const Main = () => {
       <Portfolios />
     </>
   );
-};
+});

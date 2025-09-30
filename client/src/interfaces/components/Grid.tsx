@@ -1,14 +1,12 @@
 // Grid.tsx
 
-import { useEffect, useRef } from "@importReacts";
-import { Grid as MuiGrid } from "@importMuis";
-import { GridProps } from "@importMuis";
+import { GridProps, Grid as MuiGrid } from "@importMuis";
+import { memo, useEffect, useRef } from "@importReacts";
 
 // -------------------------------------------------------------------------------------------------
-export const Grid = (props: GridProps) => {
+export const Grid = memo((props: GridProps) => {
   const cardRef = useRef<HTMLDivElement | null>(null);
 
-  // style 속성 자체를 제거
   useEffect(() => {
     if (cardRef.current) {
       cardRef.current.removeAttribute("style");
@@ -23,4 +21,4 @@ export const Grid = (props: GridProps) => {
       className={props?.className || ""}
     />
   );
-};
+});
