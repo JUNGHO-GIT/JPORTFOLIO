@@ -43,7 +43,7 @@
 		"gcloud": "node .node/gcloud.cjs"
   },
   "dependencies": {
-    "@google-cloud/storage": "^7.17.1",
+    "@google-cloud/storage": "^7.17.2",
     "@types/react-router-dom": "^5.3.3",
     "ajv": "^8.17.1",
     "ajv-keywords": "^5.1.0",
@@ -60,16 +60,16 @@
     "module-alias": "^2.2.3",
     "moment-timezone": "^0.6.0",
     "mongodb": "^6.20.0",
-    "mongoose": "^8.18.3",
+    "mongoose": "^8.19.1",
     "multer": "^2.0.2",
-    "nodemailer": "^7.0.6",
+    "nodemailer": "^7.0.9",
     "oauth-signature": "^1.5.0",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "qs": "^6.14.0",
     "request": "^2.88.2",
     "request-promise": "^4.2.6",
-    "stripe": "^19.0.0"
+    "stripe": "^19.1.0"
   },
   "devDependencies": {
     "@types/bcryptjs": "^3.0.0",
@@ -79,7 +79,7 @@
     "@types/jsdom": "^27.0.0",
     "@types/mocha": "^10.0.10",
     "@types/multer": "^2.0.0",
-    "@types/node": "^24.6.1",
+    "@types/node": "^24.7.2",
     "@types/nodemailer": "^7.0.2",
     "@types/passport": "^1.0.17",
     "@types/passport-google-oauth20": "^2.0.16",
