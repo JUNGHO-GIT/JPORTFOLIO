@@ -1,4 +1,4 @@
-// swc.cjs
+// client/swc.cjs
 
 const { spawnSync, spawn } = require(`child_process`);
 const fs = require(`fs`);

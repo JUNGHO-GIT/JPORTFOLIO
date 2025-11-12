@@ -1,4 +1,4 @@
-// reset.cjs
+// client/reset.cjs
 
 const { spawnSync } = require("child_process");
 const { rmSync, existsSync } = require("fs");
