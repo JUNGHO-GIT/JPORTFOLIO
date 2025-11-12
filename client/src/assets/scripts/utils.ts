@@ -1,19 +1,19 @@
 // utils.ts
 
 // 1. random ----------------------------------------------------------------------------------
-export const fnRandomNumber = (data: number) => {
+export const randomNumber = (data: number) => {
 	return Math.floor(Math.random() * data);
 };
 
 // 2. time ------------------------------------------------------------------------------------
-export const fnRandomTime = (): string => {
+export const randomTime = (): string => {
 	const hour = Math.floor(Math.random() * 23).toString().padStart(2, '0');
 	const minute = Math.floor(Math.random() * 60).toString().padStart(2, '0');
 	return `${hour}:${minute}`;
 };
 
 // 3. date ------------------------------------------------------------------------------------
-export const fnCalcDate = (startTime: string, endTime: string) => {
+export const calcDuration = (startTime: string, endTime: string) => {
 	const start = new Date(`1970/01/01 ${startTime}`);
 	const end = new Date(`1970/01/01 ${endTime}`);
 	const duration = new Date(Number(end) - Number(start) + 24 * 60 * 60 * 1000);
@@ -21,7 +21,7 @@ export const fnCalcDate = (startTime: string, endTime: string) => {
 };
 
 // 4. decimal ---------------------------------------------------------------------------------
-export const fnStrToDecimal = (time: string) => {
+export const timeStrToDecimal = (time: string) => {
 	if (!time) {
 		return 0;
 	}
@@ -33,7 +33,7 @@ export const fnStrToDecimal = (time: string) => {
 };
 
 // 4. decimal --------------------------------------------------------------------------------
-export const fnDecimalToStr = (time: number) => {
+export const decimalToTimeStr = (time: number) => {
 	if (time === null || time === undefined) {
 		return "00:00";
 	}
@@ -47,7 +47,7 @@ export const fnDecimalToStr = (time: number) => {
 
 // 5. insertComma -----------------------------------------------------------------------------
 // - 세자리 마다 콤마(,) 삽입
-export const fnInsertComma = (str: string | number) => {
+export const insertComma = (str: string | number) => {
 	try {
 		// 만약 number 형식이면 string 으로 변환
 		if (typeof str === "number") {
@@ -81,7 +81,7 @@ export const fnInsertComma = (str: string | number) => {
 };
 
 // 6. makeForm --------------------------------------------------------------------------------
-export const fnMakeForm = (
+export const buildFormData = (
 	object: any,
 	fileList: File[] | null,
 	extra?: any

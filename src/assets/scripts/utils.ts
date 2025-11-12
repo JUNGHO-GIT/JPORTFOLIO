@@ -6,18 +6,18 @@ import dotenv from "dotenv";
 dotenv.config();
 
 // 1-1. number -------------------------------------------------------------------------------------
-export const fnRandomNumber = (data: number) => {
+export const randomNumber = (data: number) => {
   return Math.floor(Math.random() * data);
 }
 // 1-2. time ---------------------------------------------------------------------------------------
-export const fnRandomTime = () => {
+export const randomTime = () => {
   const hour = Math.floor(Math.random() * 23).toString().padStart(2, '0');
   const minute = Math.floor(Math.random() * 60).toString().padStart(2, '0');
 
   return `${hour}:${minute}`;
 }
 // 1-3. date ---------------------------------------------------------------------------------------
-export const fnCalcDate = (startTime: string, endTime: string) => {
+export const calcDuration = (startTime: string, endTime: string) => {
   const start = new Date(`1970/01/01 ${startTime}`);
   const end = new Date(`1970/01/01 ${endTime}`);
   const duration = new Date(Number(end) - Number(start) + 24 * 60 * 60 * 1000);
@@ -26,7 +26,7 @@ export const fnCalcDate = (startTime: string, endTime: string) => {
 }
 
 // 1-2. format -------------------------------------------------------------------------------------
-export const fnTimeToDecimal = (data: string) => {
+export const timeToDecimal = (data: string) => {
   if (typeof data !== 'string' || !data || data === null || data === undefined) {
     return 0;
   }
@@ -41,7 +41,7 @@ export const fnTimeToDecimal = (data: string) => {
   return hours + minutes;
 };
 
-export const fnDecimalToTime = (data: number) => {
+export const decimalToTime = (data: number) => {
   if (typeof data !== 'number' || !data || isNaN(data) || data === null || data === undefined) {
     return "00:00";
   }
@@ -54,7 +54,7 @@ export const fnDecimalToTime = (data: number) => {
 };
 
 // 1-2. convert ------------------------------------------------------------------------------------
-export const fnStrToDecimal = (data: string) => {
+export const timeStrToDecimal = (data: string) => {
   if (!data || data === null || data === undefined) {
     return 0;
   }
@@ -65,7 +65,7 @@ export const fnStrToDecimal = (data: string) => {
   return adjustedHours + adjustedMinutes / 60;
 };
 
-export const fnDecimalToStr = (data: number) => {
+export const decimalToTimeStr = (data: number) => {
   if (!data || isNaN(data) || data === null || data === undefined) {
     return "00:00";
   }
@@ -81,7 +81,7 @@ export const fnDecimalToStr = (data: number) => {
 export const token: string = crypto.randomBytes(20).toString('hex');
 
 // 4-2. adminCheck ---------------------------------------------------------------------------------
-export const fnAdminCheck = (user_id: string) => {
+export const isAdmin = (user_id: string) => {
   const adminId = process.env.ADMIN_ID;
 
   if (user_id === adminId) {
@@ -91,16 +91,16 @@ export const fnAdminCheck = (user_id: string) => {
 };
 
 // 4-3. combinePw ----------------------------------------------------------------------------------
-export const fnCombinePw = async (inputPw: string, token: string) => {
+export const combinePasswordToken = async (inputPw: string, token: string) => {
   return `${inputPw}_${token}`;
 };
 
 // 4-4. hashPw -------------------------------------------------------------------------------------
-export const fnHashPw = async (combinedPw: string) => {
+export const hashPassword = async (combinedPw: string) => {
   return await bcrypt.hash(combinedPw, 10);
 }
 
 // 4-5. comparePw ----------------------------------------------------------------------------------
-export const fnComparePw = async (inputPw: string, storedPw: string) => {
+export const comparePassword = async (inputPw: string, storedPw: string) => {
   return await bcrypt.compare(inputPw, storedPw);
 }

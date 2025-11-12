@@ -2,8 +2,8 @@
 
 // -------------------------------------------------------------------------------------------------
 export {
-  fnGetLocal,
-  fnSetLocal,
-  fnGetSession,
-  fnSetSession,
+  getLocal,
+  setLocal,
+  getSession,
+  setSession,
 } from "@assets/scripts/storage";

@@ -2,8 +2,8 @@
 
 const TITLE: string = process.env.REACT_APP_TITLE || "";
 
-// 1. fnGetLocal -------------------------------------------------------------------------------------
-export const fnGetLocal = (key1: string, key2: string, key3: string) => {
+// 1. getLocal -------------------------------------------------------------------------------------
+export const getLocal = (key1: string, key2: string, key3: string) => {
 
   const localTitle = JSON.parse(localStorage.getItem(TITLE) || "{}");
 
@@ -23,8 +23,8 @@ export const fnGetLocal = (key1: string, key2: string, key3: string) => {
   }
 };
 
-// 2. fnSetLocal -------------------------------------------------------------------------------------
-export const fnSetLocal = (key1: string, key2: string, key3: string, value: any) => {
+// 2. setLocal -------------------------------------------------------------------------------------
+export const setLocal = (key1: string, key2: string, key3: string, value: any) => {
 
   const localTitle = JSON.parse(localStorage.getItem(TITLE) || "{}");
 
@@ -71,8 +71,8 @@ export const fnSetLocal = (key1: string, key2: string, key3: string, value: any)
   }
 };
 
-// 3. fnGetSession -----------------------------------------------------------------------------------
-export const fnGetSession = (key1: string, key2: string, key3: string) => {
+// 3. getSession -----------------------------------------------------------------------------------
+export const getSession = (key1: string, key2: string, key3: string) => {
 
   const sessionTitle = JSON.parse(sessionStorage.getItem(TITLE) || "{}");
 
@@ -94,8 +94,8 @@ export const fnGetSession = (key1: string, key2: string, key3: string) => {
   return {};
 };
 
-// 4. fnSetSession -----------------------------------------------------------------------------------
-export const fnSetSession = (key1: string, key2: string, key3: string, value: any) => {
+// 4. setSession -----------------------------------------------------------------------------------
+export const setSession = (key1: string, key2: string, key3: string, value: any) => {
 
   const sessionTitle = JSON.parse(sessionStorage.getItem(TITLE) || "{}");
 

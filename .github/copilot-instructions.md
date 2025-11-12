@@ -1,14 +1,99 @@
-0. The Maximum Java version is Java 11
-1. The most important thing to keep in mind is to reduce unnecessary memory waste and leaks, and maximize performance and efficiency
-2. But Do not shorten variable or parameter names to extremes. For example, do not use result => r And Never break a line before a semicolon
-2. Change the code to arrow function format, and if it is a function, add the fn prefix in the format 'fnFoo'
-3. Never change comments in the code I send, even if they are simple `----` lines
-4. Use `JUST ONE SPACE` around assignment operators (ex. '=' or ':') and avoid more than one spacing for alignment
-5. Always use line breaks and indentation in parentheses, square brackets
-6. When rewriting, avoid using 'if' statements whenever possible and use symbols like the ternary operator or '&&' instead
-7. When modifying existing code, revise all 'if' statements to use the ternary operator or symbols like '&&' for brevity
-8. Nevertheless, only in the absolutely unavoidable case where you must use an 'if' conditional statement, follow these guidelines:
-9-1. All if statements must use braces {..} and proper line breaks/indentation, especially when they contain return statements
-9-2. Never write `if` statements on a single line.
-9-3. Use `}\n\telse {` or `}\n\telse if {` or `}\n\tcatch {` instead of `}else{` or `}else if {` or `}catch{`
-9-4. Convert all single-line if statements like `if (condition) return value;` to:`if (condition) {\n\treturn value;\n}`
+# CORE PRINCIPLES & CONTEXT & LANGUAGE
+
+## Response Principles
+- Provide detailed, objective, professional responses
+- Capture core intent, not just literal interpretation
+- Never fabricate And Acknowledge and correct errors immediately
+- Korean development environment (may include Korean terms/comments)
+
+## Coding Philosophy
+- PerformanceFirst: minimize memory waste/leaks, maximize efficiency
+- Readability: clear variable names (avoid extreme abbreviations)
+- Maintainability: avoid deeply nested logic, prefer flat structure
+- FunctionOrganization: group by logical flow units, not micro-tasks
+- StyleGuide: avoid spaghetti code like more over 4 phase indentation etc
+
+## MANDATORY Code Modification Protocol
+- ALWAYS PREFER ternary operators or IIFE over if-else statements
+- ALWAYS send it in "code format" so that I can "copy and paste" it
+- ALWAYS modify and return "MODIFIED code" ONLY
+- SEND entire code when i request entire code specially
+- NEVER modify comments (preserve `// -----------` exactly)
+- NEVER break line before semicolon
+- ALWAYS Exactly ONE SPACE around "=" or ":"
+
+## Java (max v1.8)
+- Instead of complicating things by separating small methods, define inner classes within a larger class and define related methods within those inner classes.
+
+## JavaScript/TypeScript (ES6+)
+- Prefer ternary/&& over if statements
+- Prefer Arrow functions
+- Template literals: `foo` (backticks)
+- Object keys: always double quotes ("key": value)
+
+# FORMATTING RULES
+
+## IIFE
+- Prefer IIFE over if-else for control flow when ternary is insufficient
+- AVOID excessive IIFE: use simple parentheses when no function scope needed
+- Only use arrow function wrapper `(() => { })()` when multiple statements require isolated scope, variable declarations need block scoping, or return statement needed mid-execution
+- **INCORRECT:**
+```javascript
+(!result.error) ? (() => {
+  const okStatus = typeof result.status === `number` ? result.status === 0 : true;
+  return okStatus;
+})() : (
+  false
+)
+```
+- **CORRECT:**
+```javascript
+(!result.error) ? (
+  typeof result.status === `number` ? result.status === 0 : true
+) : (
+  false
+)
+```
+
+## TERNARY CHAINS
+- Wrap each condition/result in parentheses on separate lines
+- **INCORRECT:**
+```javascript
+(!str || str === "today") ? moment() : (str === "yesterday") ? moment(str, "YYYYMMDD") : moment(str);
+```
+- **CORRECT:**
+```javascript
+(!str || str === `today`) ? (
+  moment()
+) : (str === "yesterday") ? (
+  moment(str, "YYYYMMDD")
+) : (
+  moment(str)
+)
+```
+
+## IF/ELSE TRY/CATCH
+- ALWAYS PREFER ternary operators or IIFE over if-else statements
+- ALL if/else/try/catch MUST use braces with line breaks
+- Closing brace and else/catch on SEPARATE lines: `}\nelse {`
+- **INCORRECT:**
+```javascript
+if (x) return y;
+if (condition) {
+} else { handle(e); }
+```
+- **CORRECT:**
+```javascript
+if (x) {
+  return y;
+}
+else {
+  statement;
+}
+try {
+  riskyOp();
+}
+catch (Exception e) {
+  handle(e);
+}
+```
