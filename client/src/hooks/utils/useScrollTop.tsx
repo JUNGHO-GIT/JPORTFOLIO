@@ -1,7 +1,7 @@
 // useScrollTop.tsx
 
-import { useEffect, memo } from "@importReacts";
-import { useCommonValue } from "@importHooks";
+import { useEffect, memo } from "src/exports/ExportReacts";
+import { useCommonValue } from "src/exports/ExportHooks";
 
 // -------------------------------------------------------------------------------------------------
 export const useScrollTop = () => {

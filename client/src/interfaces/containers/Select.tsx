@@ -1,7 +1,7 @@
 // Select.tsx
 
-import { TextField } from "@importMuis";
-import { memo, useCallback, useMemo, useRef } from "@importReacts";
+import { TextField } from "src/exports/ExportMuis";
+import { memo, useCallback, useMemo, useRef } from "src/exports/ExportReacts";
 
 // -------------------------------------------------------------------------------------------------
 export const Select = memo((props: any) => {

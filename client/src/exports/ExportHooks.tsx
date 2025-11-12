@@ -1,4 +1,4 @@
-// ImportHooks.tsx
+// ExportHooks.tsx
 
 // common
 export { useCommonValue } from "@hooks/common/useCommonValue";

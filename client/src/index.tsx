@@ -10,23 +10,23 @@ import '@assets/styles/Components.css';
 import {
   BrowserRouter, Routes, Route, createRoot,
   useEffect, memo
-} from '@importReacts';
+} from 'src/exports/ExportReacts';
 
 import {
   CssBaseline, ThemeProvider, createTheme
-} from '@importMuis';
+} from 'src/exports/ExportMuis';
 
 import {
   useStoreLoading
-} from '@importStores';
+} from 'src/exports/ExportStores';
 
 import {
   Loader, Footer, Toggle
-} from '@importLayouts';
+} from 'src/exports/ExportLayouts';
 
 import {
   Main, Project1, Project2, Project3, Project4, Project5, Project6, Project7, Project8
-} from '@importPages';
+} from 'src/exports/ExportPages';
 
 // -------------------------------------------------------------------------------------------------
 const App = memo(() => {

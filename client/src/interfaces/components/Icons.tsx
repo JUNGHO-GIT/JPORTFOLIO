@@ -1,7 +1,7 @@
 // Icons.tsx
 
-import { IconButton } from "@importMuis";
-import { memo, type JSX } from "@importReacts";
+import { IconButton } from "src/exports/ExportMuis";
+import { memo, type JSX } from "src/exports/ExportReacts";
 
 // -------------------------------------------------------------------------------------------------
 export const Icons = memo((props: any) => {

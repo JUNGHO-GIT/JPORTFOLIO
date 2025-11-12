@@ -1,8 +1,8 @@
 // Loader.tsx
 
-import { useStoreLoading } from "@importStores";
-import { memo } from "@importReacts";
-import { Div } from "@importComponents";
+import { useStoreLoading } from "src/exports/ExportStores";
+import { memo } from "src/exports/ExportReacts";
+import { Div } from "src/exports/ExportComponents";
 
 // -------------------------------------------------------------------------------------------------
 export const Loader = memo(() => {

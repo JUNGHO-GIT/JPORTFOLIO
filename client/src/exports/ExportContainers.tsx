@@ -1,4 +1,4 @@
-// ImportContainers.tsx
+// ExportContainers.tsx
 
 import { PopUp } from "@interfaces/containers/PopUp";
 import { Input } from "@interfaces/containers/Input";

@@ -1,11 +1,11 @@
 // Skills.jsx
 
-import { useEffect, useState, memo } from "@importReacts";
-import { useResponsive, useCommonValue } from "@importHooks";
-import { useStoreAlert } from "@importStores";
-import { axios } from "@importLibs";
-import { Div, Img, Hr, Br, Grid, Paper, Icons } from "@importComponents";
-import { Accordion, AccordionSummary, AccordionDetails } from "@importMuis";
+import { useEffect, useState, memo } from "src/exports/ExportReacts";
+import { useResponsive, useCommonValue } from "src/exports/ExportHooks";
+import { useStoreAlert } from "src/exports/ExportStores";
+import { axios } from "src/exports/ExportLibs";
+import { Div, Img, Hr, Br, Grid, Paper, Icons } from "src/exports/ExportComponents";
+import { Accordion, AccordionSummary, AccordionDetails } from "src/exports/ExportMuis";
 
 // -------------------------------------------------------------------------------------------------
 export const Skills = memo(() => {

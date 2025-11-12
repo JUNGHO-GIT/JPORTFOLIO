@@ -1,4 +1,4 @@
-// ImportLayouts.tsx
+// ExportLayouts.tsx
 
 // -------------------------------------------------------------------------------------------------
 export { Footer } from "@interfaces/layouts/Footer";

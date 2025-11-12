@@ -1,4 +1,4 @@
-// ImportComponents.tsx
+// ExportComponents.tsx
 
 // -------------------------------------------------------------------------------------------------
 export { Div } from "@interfaces/components/Div";

@@ -1,9 +1,9 @@
 // Main.jsx
 
-import { useEffect, memo } from "@importReacts";
-import { useStoreLoading } from "@importStores";
-import { About, Hero, Portfolios, Skills } from "@importPages";
-import { Br } from "@importComponents";
+import { useEffect, memo } from "src/exports/ExportReacts";
+import { useStoreLoading } from "src/exports/ExportStores";
+import { About, Hero, Portfolios, Skills } from "src/exports/ExportPages";
+import { Br } from "src/exports/ExportComponents";
 
 // -------------------------------------------------------------------------------------------------
 export const Main = memo(() => {

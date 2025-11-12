@@ -1,8 +1,8 @@
 // PopUp.tsx
 
-import { Popover } from "@importComponents";
-import { bindPopover, PopoverOrigin, usePopupState } from "@importMuis";
-import { memo, useCallback, useEffect, useMemo, useState } from "@importReacts";
+import { Popover } from "src/exports/ExportComponents";
+import { bindPopover, PopoverOrigin, usePopupState } from "src/exports/ExportMuis";
+import { memo, useCallback, useEffect, useMemo, useState } from "src/exports/ExportReacts";
 
 // -------------------------------------------------------------------------------------------------
 export const PopUp = memo((props: any) => {

@@ -1,7 +1,7 @@
 // Paper.tsx
 
-import { Paper as MuiPaper, PaperProps } from "@importMuis";
-import { memo, useEffect, useRef } from "@importReacts";
+import { Paper as MuiPaper, PaperProps } from "src/exports/ExportMuis";
+import { memo, useEffect, useRef } from "src/exports/ExportReacts";
 
 // -------------------------------------------------------------------------------------------------
 export const Paper = memo((props: PaperProps) => {

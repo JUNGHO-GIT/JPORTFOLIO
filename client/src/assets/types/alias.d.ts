@@ -25,52 +25,51 @@ declare module "@schemas/*" {
   export default value;
 }
 
-declare module "@importHooks/*" {
+declare module "@exportHooks/*" {
   const value: any;
   export default value;
 }
-declare module "@importStores/*" {
+declare module "@exportStores/*" {
   const value: any;
   export default value;
 }
-declare module "@importLibs/*" {
+declare module "@exportLibs/*" {
   const value: any;
   export default value;
 }
-declare module "@importMuis/*" {
+declare module "@exportMuis/*" {
   const value: any;
   export default value;
 }
-declare module "@importReacts/*" {
+declare module "@exportReacts/*" {
   const value: any;
   export default value;
 }
-declare module "@importSchemas/*" {
+declare module "@exportSchemas/*" {
   const value: any;
   export default value;
 }
-declare module "@importScripts/*" {
+declare module "@exportScripts/*" {
   const value: any;
   export default value;
 }
-declare module "@importTypes/*" {
+declare module "@exportTypes/*" {
   const value: any;
   export default value;
 }
-
-declare module "@importComponents/*" {
+declare module "@exportComponents/*" {
   const value: any;
   export default value;
 }
-declare module "@importContainers/*" {
+declare module "@exportContainers/*" {
   const value: any;
   export default value;
 }
-declare module "@importLayouts/*" {
+declare module "@exportLayouts/*" {
   const value: any;
   export default value;
 }
-declare module "@importPages/*" {
+declare module "@exportPages/*" {
   const value: any;
   export default value;
 }

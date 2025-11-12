@@ -1,6 +1,6 @@
 // useCommonValue.tsx
 
-import { useLocation, useNavigate } from "@importReacts";
+import { useLocation, useNavigate } from "src/exports/ExportReacts";
 
 // -------------------------------------------------------------------------------------------------
 export const useCommonValue = () => {

@@ -1,10 +1,10 @@
 // About.jsx
 
-import { useEffect, useState, memo } from "@importReacts";
-import { useResponsive, useCommonValue } from "@importHooks";
-import { useStoreAlert } from "@importStores";
-import { axios } from "@importLibs";
-import { Div, Img, Hr, Br, Grid, Paper } from "@importComponents";
+import { useEffect, useState, memo } from "src/exports/ExportReacts";
+import { useResponsive, useCommonValue } from "src/exports/ExportHooks";
+import { useStoreAlert } from "src/exports/ExportStores";
+import { axios } from "src/exports/ExportLibs";
+import { Div, Img, Hr, Br, Grid, Paper } from "src/exports/ExportComponents";
 
 // -------------------------------------------------------------------------------------------------
 export const About = memo(() => {

@@ -1,4 +1,4 @@
-// ImportStores.tsx
+// ExportStores.tsx
 
 // -------------------------------------------------------------------------------------------------
 export { useStoreAlert } from "@stores/useStoreAlert";
