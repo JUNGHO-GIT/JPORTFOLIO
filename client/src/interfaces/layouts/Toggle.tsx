@@ -1,9 +1,9 @@
 // Toggle.tsx
 
-import { useState, memo } from "src/exports/ExportReacts";
-import { useCommonValue } from "src/exports/ExportHooks";
-import { Div, Icons } from "src/exports/ExportComponents";
-import { SpeedDial, Backdrop } from "src/exports/ExportMuis";
+import { useState, memo } from "@exportReacts";
+import { useCommonValue } from "@exportHooks";
+import { Div, Icons } from "@exportComponents";
+import { SpeedDial, Backdrop } from "@exportMuis";
 
 // -------------------------------------------------------------------------------------------------
 export const Toggle = memo(() => {

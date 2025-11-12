@@ -1,10 +1,10 @@
 // Project2.tsx
 
-import { useEffect, useState, memo } from "src/exports/ExportReacts";
-import { useResponsive, useCommonValue } from "src/exports/ExportHooks";
-import { useStoreAlert, useStoreLoading } from "src/exports/ExportStores";
-import { Swiper, SwiperSlide, Navigation, Pagination, axios } from "src/exports/ExportLibs";
-import { Div, Img, Hr, Br, Grid, Paper, Icons } from "src/exports/ExportComponents";
+import { useEffect, useState, memo } from "@exportReacts";
+import { useResponsive, useCommonValue } from "@exportHooks";
+import { useStoreAlert, useStoreLoading } from "@exportStores";
+import { Swiper, SwiperSlide, Navigation, Pagination, axios } from "@exportLibs";
+import { Div, Img, Hr, Br, Grid, Paper, Icons } from "@exportComponents";
 
 // -------------------------------------------------------------------------------------------------
 export const Project2 = memo(() => {

@@ -1,10 +1,10 @@
 // Portfolios.jsx
 
-import { useEffect, useState, memo } from "src/exports/ExportReacts";
-import { useResponsive, useCommonValue } from "src/exports/ExportHooks";
-import { useStoreAlert } from "src/exports/ExportStores";
-import { axios } from "src/exports/ExportLibs";
-import { Div, Img, Hr, Br, Grid, Paper } from "src/exports/ExportComponents";
+import { useEffect, useState, memo } from "@exportReacts";
+import { useResponsive, useCommonValue } from "@exportHooks";
+import { useStoreAlert } from "@exportStores";
+import { axios } from "@exportLibs";
+import { Div, Img, Hr, Br, Grid, Paper } from "@exportComponents";
 
 // -------------------------------------------------------------------------------------------------
 export const Portfolios = memo(() => {

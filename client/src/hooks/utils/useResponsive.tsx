@@ -1,7 +1,7 @@
 // useResponsive.tsx
 
-import { useState, useEffect, memo } from "src/exports/ExportReacts";
-import { useMediaQuery } from "src/exports/ExportMuis";
+import { useState, useEffect, memo } from "@exportReacts";
+import { useMediaQuery } from "@exportMuis";
 
 // -------------------------------------------------------------------------------------------------
 export const useResponsive = () => {

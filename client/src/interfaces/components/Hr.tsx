@@ -1,6 +1,6 @@
 // Hr.tsx
 
-import { memo } from "src/exports/ExportReacts";
+import { memo } from "@exportReacts";
 
 // -------------------------------------------------------------------------------------------------
 export const Hr = memo((props : any) => (

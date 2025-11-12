@@ -1,7 +1,7 @@
 // Grid.tsx
 
-import { GridProps, Grid as MuiGrid } from "src/exports/ExportMuis";
-import { memo, useEffect, useRef } from "src/exports/ExportReacts";
+import { GridProps, Grid as MuiGrid } from "@exportMuis";
+import { memo, useEffect, useRef } from "@exportReacts";
 
 // -------------------------------------------------------------------------------------------------
 export const Grid = memo((props: GridProps) => {

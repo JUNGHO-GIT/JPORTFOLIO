@@ -1,7 +1,7 @@
 // Input.tsx
 
-import { TextField } from "src/exports/ExportMuis";
-import { memo, useCallback, useMemo, useRef } from "src/exports/ExportReacts";
+import { TextField } from "@exportMuis";
+import { memo, useCallback, useMemo, useRef } from "@exportReacts";
 
 // -------------------------------------------------------------------------------------------------
 export const Input = memo((props: any) => {

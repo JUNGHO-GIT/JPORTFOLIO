@@ -1,7 +1,7 @@
 // useStorageSession.tsx
 
-import { useState, useEffect } from "src/exports/ExportReacts";
-import { getSession, setSession } from "src/exports/ExportScripts";
+import { useState, useEffect } from "@exportReacts";
+import { getSession, setSession } from "@exportScripts";
 
 // -------------------------------------------------------------------------------------------------
 export const useStorageSession = (key1: string, key2: string, key3: string, initialVal: any) => {

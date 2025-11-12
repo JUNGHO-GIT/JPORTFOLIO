@@ -1,9 +1,9 @@
 // Hero.jsx
 
-import { useState, useRef, useEffect, memo } from "src/exports/ExportReacts";
-import { useResponsive } from "src/exports/ExportHooks";
-import { Typed } from "src/exports/ExportLibs";
-import { Div, Img, Grid, Paper } from "src/exports/ExportComponents";
+import { useState, useRef, useEffect, memo } from "@exportReacts";
+import { useResponsive } from "@exportHooks";
+import { Typed } from "@exportLibs";
+import { Div, Img, Grid, Paper } from "@exportComponents";
 
 // -------------------------------------------------------------------------------------------------
 export const Hero = memo(() => {

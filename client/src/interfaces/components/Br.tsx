@@ -1,6 +1,6 @@
 // Br.tsx
 
-import { memo } from "src/exports/ExportReacts";
+import { memo } from "@exportReacts";
 
 // -------------------------------------------------------------------------------------------------
 export const Br = memo((props: any) => (

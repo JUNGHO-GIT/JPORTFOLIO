@@ -1,9 +1,9 @@
 // Footer.tsx
 
-import { useState, useEffect, memo } from "src/exports/ExportReacts";
-import { useCommonValue, useResponsive } from "src/exports/ExportHooks";
-import { axios } from "src/exports/ExportLibs";
-import { Div, Img, Grid, Paper } from "src/exports/ExportComponents";
+import { useState, useEffect, memo } from "@exportReacts";
+import { useCommonValue, useResponsive } from "@exportHooks";
+import { axios } from "@exportLibs";
+import { Div, Img, Grid, Paper } from "@exportComponents";
 
 // -------------------------------------------------------------------------------------------------
 export const Footer = memo(() => {

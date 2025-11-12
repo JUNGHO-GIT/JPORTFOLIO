@@ -1,6 +1,6 @@
 // Div.tsx
 
-import { memo } from "src/exports/ExportReacts";
+import { memo } from "@exportReacts";
 
 // -------------------------------------------------------------------------------------------------
 export const Div = memo((props: any) => {

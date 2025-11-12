@@ -1,7 +1,7 @@
 // Btn.tsx
 
-import { Button } from "src/exports/ExportMuis";
-import { memo } from "src/exports/ExportReacts";
+import { Button } from "@exportMuis";
+import { memo } from "@exportReacts";
 
 // -------------------------------------------------------------------------------------------------
 export const Btn = memo((props: any) => (
