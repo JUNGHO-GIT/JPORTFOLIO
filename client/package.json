@@ -49,7 +49,8 @@
 	},
 	"scripts": {
 		"start": "bun .node/swc.cjs --bun --start --client",
-		"build": "bun .node/swc.cjs --bun --build --client",
+    "build": "bun .node/swc.cjs --bun --build --client --dev",
+		"build:prod": "bun .node/swc.cjs --bun --build --client --prod",
 		"reset": "bun .node/reset.cjs --bun --reset",
 		"fix": "bun .node/fix.cjs --bun --fix",
 		"gcloud": "bun .node/gcloud.cjs --bun --deploy"
