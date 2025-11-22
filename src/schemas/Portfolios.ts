@@ -68,7 +68,7 @@ const schema = new mongoose.Schema(
     }
   },
   {
-    collection: "portfolios",
+    collection: "Portfolios",
     timestamps: {
       createdAt: "portfolios_regDt",
       updatedAt: "portfolios_updateDt"
@@ -79,9 +79,9 @@ const schema = new mongoose.Schema(
 // 3. counter --------------------------------------------------------------------------------------
 schema.pre<PortfoliosType>("save", async function() {
   if (this.isNew) {
-    this.portfolios_number = await incrementSeq("portfolios_number", "portfolios");
+    this.portfolios_number = await incrementSeq("portfolios_number", "Portfolios");
   }
 });
 
 // 5. model ----------------------------------------------------------------------------------------
-export const Portfolios = mongoose.model<PortfoliosType>("portfolios", schema);
+export const Portfolios = mongoose.model<PortfoliosType>("Portfolios", schema);

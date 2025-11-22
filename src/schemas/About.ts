@@ -59,7 +59,7 @@ const schema = new mongoose.Schema(
     }
   },
   {
-    collection: "about",
+    collection: "About",
     timestamps: {
       createdAt: "about_regDt",
       updatedAt: "about_updateDt"
@@ -70,9 +70,9 @@ const schema = new mongoose.Schema(
 // 3. counter --------------------------------------------------------------------------------------
 schema.pre<AboutType>("save", async function() {
   if (this.isNew) {
-    this.about_number = await incrementSeq("about_number", "about");
+    this.about_number = await incrementSeq("about_number", "About");
   }
 });
 
 // 5. model ----------------------------------------------------------------------------------------
-export const About = mongoose.model<AboutType>("about", schema);
+export const About = mongoose.model<AboutType>("About", schema);

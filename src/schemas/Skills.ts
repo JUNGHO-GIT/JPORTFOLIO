@@ -67,7 +67,7 @@ const schema = new mongoose.Schema(
     }
   },
   {
-    collection: "skills",
+    collection: "Skills",
     timestamps: {
       createdAt: "skills_regDt",
       updatedAt: "skills_updateDt"
@@ -78,9 +78,9 @@ const schema = new mongoose.Schema(
 // 3. counter --------------------------------------------------------------------------------------
 schema.pre<SkillsType>("save", async function() {
   if (this.isNew) {
-    this.skills_number = await incrementSeq("skills_number", "skills");
+    this.skills_number = await incrementSeq("skills_number", "Skills");
   }
 });
 
 // 5. model ----------------------------------------------------------------------------------------
-export const Skills = mongoose.model<SkillsType>("skills", schema);
+export const Skills = mongoose.model<SkillsType>("Skills", schema);

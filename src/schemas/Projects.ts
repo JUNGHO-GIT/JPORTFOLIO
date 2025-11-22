@@ -77,7 +77,7 @@ const schema = new mongoose.Schema(
     }
   },
   {
-    collection: "projects",
+    collection: "Projects",
     timestamps: {
       createdAt: "project_regDt",
       updatedAt: "project_updateDt"
@@ -88,9 +88,9 @@ const schema = new mongoose.Schema(
 // 3. counter --------------------------------------------------------------------------------------
 schema.pre<ProjectsType>("save", async function() {
   if (this.isNew) {
-    this.project_number = await incrementSeq("project_number", "projects");
+    this.project_number = await incrementSeq("project_number", "Projects");
   }
 });
 
 // 5. model ----------------------------------------------------------------------------------------
-export const Projects = mongoose.model<ProjectsType>("projects", schema);
+export const Projects = mongoose.model<ProjectsType>("Projects", schema);

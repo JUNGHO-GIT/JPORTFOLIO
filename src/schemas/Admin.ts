@@ -48,7 +48,7 @@ const schema = new mongoose.Schema(
     }
   },
   {
-    collection: "admin",
+    collection: "Admin",
     timestamps: {
       createdAt: "admin_regDt",
       updatedAt: "admin_updateDt"
@@ -59,9 +59,9 @@ const schema = new mongoose.Schema(
 // 3. counter --------------------------------------------------------------------------------------
 schema.pre<AdminType>("save", async function() {
   if (this.isNew) {
-    this.admin_number = await incrementSeq("admin_number", "admin");
+    this.admin_number = await incrementSeq("admin_number", "Admin");
   }
 });
 
 // 5. model ----------------------------------------------------------------------------------------
-export const Admin = mongoose.model<AdminType>("admin", schema);
+export const Admin = mongoose.model<AdminType>("Admin", schema);
