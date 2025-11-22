@@ -3,7 +3,16 @@
 import mongoose from "mongoose";
 import { incrementSeq } from "@schemas/Counter";
 
-// -------------------------------------------------------------------------------------------------
+// 0. types ---------------------------------------------------------------------------------------
+declare type AdminType = mongoose.Document & {
+  admin_number: number;
+  admin_date: string;
+  adminSection: any[];
+  admin_regDt: Date;
+  admin_updateDt: Date;
+}
+
+// 1. schema ---------------------------------------------------------------------------------------
 const schema = new mongoose.Schema(
   {
     admin_number : {
@@ -39,7 +48,7 @@ const schema = new mongoose.Schema(
     }
   },
   {
-    collection: "Admin",
+    collection: "admin",
     timestamps: {
       createdAt: "admin_regDt",
       updatedAt: "admin_updateDt"
@@ -48,14 +57,11 @@ const schema = new mongoose.Schema(
 );
 
 // 3. counter --------------------------------------------------------------------------------------
-schema.pre("save", async function(next) {
+schema.pre<AdminType>("save", async function() {
   if (this.isNew) {
-    this.admin_number = await incrementSeq("admin_number", "Admin");
+    this.admin_number = await incrementSeq("admin_number", "admin");
   }
-  next();
 });
 
 // 5. model ----------------------------------------------------------------------------------------
-export const Admin = mongoose.model(
-  "Admin", schema
-);
+export const Admin = mongoose.model<AdminType>("admin", schema);

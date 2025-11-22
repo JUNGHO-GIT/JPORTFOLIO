@@ -16,7 +16,7 @@ const schema = new mongoose.Schema(
     },
   },
   {
-    collection: "Counter",
+    collection: "counter",
   }
 );
 
@@ -33,7 +33,7 @@ export const incrementSeq = async (sequenceName: string, modelName: string) => {
 
   // 1. Model과 Counter 초기화
   const Model = mongoose.model(modelName);
-  const Counter = mongoose.model("Counter", schema);
+  const Counter = mongoose.model("counter", schema);
 
   // 2. 최신 sequence 값을 가져오기
   latestFindResult = await Model.findOne({})

@@ -3,7 +3,16 @@
 import mongoose from "mongoose";
 import { incrementSeq } from "@schemas/Counter";
 
-// -------------------------------------------------------------------------------------------------
+// 0. types ---------------------------------------------------------------------------------------
+declare type ProjectsType = mongoose.Document & {
+  project_number: number;
+  project_id: string;
+  project_section: any[];
+  project_regDt: Date;
+  project_updateDt: Date;
+}
+
+// 1. schema ---------------------------------------------------------------------------------------
 const schema = new mongoose.Schema(
   {
     project_number : {
@@ -68,7 +77,7 @@ const schema = new mongoose.Schema(
     }
   },
   {
-    collection: "Projects",
+    collection: "projects",
     timestamps: {
       createdAt: "project_regDt",
       updatedAt: "project_updateDt"
@@ -77,14 +86,11 @@ const schema = new mongoose.Schema(
 );
 
 // 3. counter --------------------------------------------------------------------------------------
-schema.pre("save", async function(next) {
+schema.pre<ProjectsType>("save", async function() {
   if (this.isNew) {
-    this.project_number = await incrementSeq("project_number", "Projects");
+    this.project_number = await incrementSeq("project_number", "projects");
   }
-  next();
 });
 
 // 5. model ----------------------------------------------------------------------------------------
-export const Projects = mongoose.model(
-  "Projects", schema
-);
+export const Projects = mongoose.model<ProjectsType>("projects", schema);

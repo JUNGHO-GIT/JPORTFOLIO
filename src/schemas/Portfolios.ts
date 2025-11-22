@@ -3,7 +3,16 @@
 import mongoose from "mongoose";
 import { incrementSeq } from "@schemas/Counter";
 
-// -------------------------------------------------------------------------------------------------
+// 0. types ---------------------------------------------------------------------------------------
+declare type PortfoliosType = mongoose.Document & {
+  portfolios_number: number;
+  portfolios_title: string;
+  portfolios_section: any[];
+  portfolios_regDt: Date;
+  portfolios_updateDt: Date;
+}
+
+// 1. schema ---------------------------------------------------------------------------------------
 const schema = new mongoose.Schema(
   {
     portfolios_number : {
@@ -12,7 +21,6 @@ const schema = new mongoose.Schema(
       unique : true
     },
 
-    // portfolios
     portfolios_title: {
       type: String,
       default: "",
@@ -60,7 +68,7 @@ const schema = new mongoose.Schema(
     }
   },
   {
-    collection: "Portfolios",
+    collection: "portfolios",
     timestamps: {
       createdAt: "portfolios_regDt",
       updatedAt: "portfolios_updateDt"
@@ -69,14 +77,11 @@ const schema = new mongoose.Schema(
 );
 
 // 3. counter --------------------------------------------------------------------------------------
-schema.pre("save", async function(next) {
+schema.pre<PortfoliosType>("save", async function() {
   if (this.isNew) {
-    this.portfolios_number = await incrementSeq("portfolios_number", "Portfolios");
+    this.portfolios_number = await incrementSeq("portfolios_number", "portfolios");
   }
-  next();
 });
 
 // 5. model ----------------------------------------------------------------------------------------
-export const Portfolios = mongoose.model(
-  "Portfolios", schema
-);
+export const Portfolios = mongoose.model<PortfoliosType>("portfolios", schema);

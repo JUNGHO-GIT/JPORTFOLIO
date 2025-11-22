@@ -3,7 +3,17 @@
 import mongoose from "mongoose";
 import { incrementSeq } from "@schemas/Counter";
 
-// -------------------------------------------------------------------------------------------------
+// 0. types ---------------------------------------------------------------------------------------
+declare type AboutType = mongoose.Document & {
+  about_number: number;
+  about_title: string;
+  about_sub: string;
+  about_section: any[];
+  about_regDt: Date;
+  about_updateDt: Date;
+}
+
+// 1. schema ---------------------------------------------------------------------------------------
 const schema = new mongoose.Schema(
   {
     about_number : {
@@ -49,7 +59,7 @@ const schema = new mongoose.Schema(
     }
   },
   {
-    collection: "About",
+    collection: "about",
     timestamps: {
       createdAt: "about_regDt",
       updatedAt: "about_updateDt"
@@ -58,14 +68,11 @@ const schema = new mongoose.Schema(
 );
 
 // 3. counter --------------------------------------------------------------------------------------
-schema.pre("save", async function(next) {
+schema.pre<AboutType>("save", async function() {
   if (this.isNew) {
-    this.about_number = await incrementSeq("about_number", "About");
+    this.about_number = await incrementSeq("about_number", "about");
   }
-  next();
 });
 
 // 5. model ----------------------------------------------------------------------------------------
-export const About = mongoose.model(
-  "About", schema
-);
+export const About = mongoose.model<AboutType>("about", schema);

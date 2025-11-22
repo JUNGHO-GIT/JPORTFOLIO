@@ -3,7 +3,16 @@
 import mongoose from "mongoose";
 import { incrementSeq } from "@schemas/Counter";
 
-// -------------------------------------------------------------------------------------------------
+// 0. types ---------------------------------------------------------------------------------------
+declare type SkillsType = mongoose.Document & {
+  skills_number: number;
+  skills_title: string;
+  skills_section: any[];
+  skills_regDt: Date;
+  skills_updateDt: Date;
+}
+
+// 1. schema ---------------------------------------------------------------------------------------
 const schema = new mongoose.Schema(
   {
     skills_number : {
@@ -12,7 +21,6 @@ const schema = new mongoose.Schema(
       unique : true
     },
 
-    // skills
     skills_title: {
       type: String,
       default: "",
@@ -59,7 +67,7 @@ const schema = new mongoose.Schema(
     }
   },
   {
-    collection: "Skills",
+    collection: "skills",
     timestamps: {
       createdAt: "skills_regDt",
       updatedAt: "skills_updateDt"
@@ -68,14 +76,11 @@ const schema = new mongoose.Schema(
 );
 
 // 3. counter --------------------------------------------------------------------------------------
-schema.pre("save", async function(next) {
+schema.pre<SkillsType>("save", async function() {
   if (this.isNew) {
-    this.skills_number = await incrementSeq("skills_number", "Skills");
+    this.skills_number = await incrementSeq("skills_number", "skills");
   }
-  next();
 });
 
 // 5. model ----------------------------------------------------------------------------------------
-export const Skills = mongoose.model(
-  "Skills", schema
-);
+export const Skills = mongoose.model<SkillsType>("skills", schema);

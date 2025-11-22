@@ -7,7 +7,7 @@ interface ImportMetaEnv {
   readonly VITE_APP_SKILLS_URL: string;
   readonly VITE_APP_PORTFOLIOS_URL: string;
   readonly VITE_APP_PROJECTS_URL: string;
-  readonly VITE_PUBLIC_URL: string;
+  readonly VITE_APP_PUBLIC_URL: string;
 }
 
 interface ImportMeta {
