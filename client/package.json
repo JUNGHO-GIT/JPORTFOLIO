@@ -1,46 +1,45 @@
 {
-  "name": "jportfolio-client",
-  "homepage": "/JPORTFOLIO",
-  "version": "1.0.0",
-  "private": true,
-  "type": "module",
-  "main": "index.tsx",
-  "license": "Apache-2.0",
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ],
-    "rules": {
-      "import/extensions": "off",
-      "import/prefer-default-export": "off",
-      "no-console": "off",
-      "no-underscore-dangle": "off",
-      "no-unused-vars": "off",
-      "react-hooks/exhaustive-deps": "off",
-      "react-hooks/rules-of-hooks": "warn",
-      "@typescript-eslint/no-unused-vars": [
+	"name": "jportfolio-client",
+	"homepage": "/JPORTFOLIO",
+	"version": "1.0.0",
+	"type": "module",
+	"main": "index.tsx",
+	"license": "Apache-2.0",
+	"eslintConfig": {
+		"extends": [
+			"react-app",
+			"react-app/jest"
+		],
+		"rules": {
+			"import/extensions": "off",
+			"import/prefer-default-export": "off",
+			"no-console": "off",
+			"no-underscore-dangle": "off",
+			"no-unused-vars": "off",
+			"react-hooks/exhaustive-deps": "off",
+			"react-hooks/rules-of-hooks": "warn",
+			"@typescript-eslint/no-unused-expressions": "off",
+			"@typescript-eslint/no-unused-vars": [
 				"off",
 				{
 					"varsIgnorePattern": "^_",
 					"argsIgnorePattern": "^_"
 				}
-			],
-			"@typescript-eslint/no-unused-expressions": "off"
+			]
 		}
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  },
+	},
+	"browserslist": {
+		"production": [
+			">0.2%",
+			"not dead",
+			"not op_mini all"
+		],
+		"development": [
+			"last 1 chrome version",
+			"last 1 firefox version",
+			"last 1 safari version"
+		]
+	},
 	"engines": {
 		"node": "16.x"
 	},
@@ -49,62 +48,51 @@
 		"whatwg-url": "12.0.1"
 	},
 	"scripts": {
-		"start": "craco start",
-		"build": "craco build",
-		"reset": "node .node/reset.cjs --pnpm",
-		"autofix": "node .node/autofix.cjs --fix",
-		"gcloud": "node .node/gcloud.cjs --deploy"
+		"start": "bun .node/swc.cjs --bun --start --client",
+		"build": "bun .node/swc.cjs --bun --build --client",
+		"reset": "bun .node/reset.cjs --bun --reset",
+		"fix": "bun .node/fix.cjs --bun --fix",
+		"gcloud": "bun .node/gcloud.cjs --bun --deploy"
 	},
-  "dependencies": {
-    "@emotion/react": "^11.14.0",
-    "@emotion/styled": "^11.14.1",
-    "@mui/material": "^7.3.5",
-    "@mui/system": "^7.3.5",
-    "@mui/x-date-pickers": "^8.17.0",
-    "@react-hooks-library/core": "^0.6.2",
-    "ajv": "^8.17.1",
-    "ajv-keywords": "^5.1.0",
-    "axios": "^1.13.2",
-    "countries-and-timezones": "^3.8.0",
-    "date-fns": "^4.1.0",
-    "iso-country-currency": "^0.7.2",
-    "material-ui-popup-state": "^5.3.6",
-    "moment": "^2.30.1",
-    "moment-timezone": "^0.6.0",
-    "mui-file-input": "^7.0.0",
-    "react": "^19.2.0",
-    "react-calendar": "^6.0.0",
-    "react-dom": "^19.2.0",
-    "react-router": "^7.9.5",
-    "react-scripts": "^5.0.1",
-    "recharts": "^3.4.1",
-    "swiper": "^12.0.3",
-    "typed.js": "^2.1.0",
-    "zustand": "^5.0.8"
-  },
-  "devDependencies": {
-    "@babel/plugin-proposal-nullish-coalescing-operator": "^7.18.6",
-    "@babel/plugin-proposal-optional-chaining": "^7.21.0",
-    "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
-    "@babel/plugin-syntax-dynamic-import": "^7.8.3",
-    "@craco/craco": "^7.1.0",
-    "@mui/types": "^7.4.8",
-    "@swc/core": "^1.15.1",
-    "@testing-library/react": "^16.3.0",
-    "@types/navermaps": "^3.9.1",
-    "@types/node": "^24.10.1",
-    "@types/react": "^19.2.3",
-    "@types/react-dom": "^19.2.3",
-    "@types/react-router": "^5.1.20",
-    "babel-loader": "^10.0.0",
-    "compression-webpack-plugin": "^11.1.0",
-    "css-minimizer-webpack-plugin": "^7.0.2",
-    "react-app-alias": "^2.2.2",
-    "swc-minify-webpack-plugin": "^2.1.3",
-    "ts-morph": "^27.0.2",
-    "ts-prune": "^0.10.3",
-    "tslib": "^2.8.1",
-    "typescript": "^5.9.3",
-    "webpack": "^5.102.1"
-  }
+	"dependencies": {
+		"@emotion/react": "^11.14.0",
+		"@emotion/styled": "^11.14.1",
+		"@emotion/utils": "^1.4.2",
+		"@mui/material": "^7.3.5",
+		"@mui/system": "^7.3.5",
+		"@mui/x-date-pickers": "^8.19.0",
+		"@react-hooks-library/core": "^0.6.2",
+		"ajv": "^8.17.1",
+		"ajv-keywords": "^5.1.0",
+		"axios": "^1.13.2",
+		"countries-and-timezones": "^3.8.0",
+		"date-fns": "^4.1.0",
+		"iso-country-currency": "^0.7.2",
+		"material-ui-popup-state": "^5.3.6",
+		"moment": "^2.30.1",
+		"moment-timezone": "^0.6.0",
+		"mui-file-input": "^7.0.0",
+		"react": "^19.2.0",
+		"react-calendar": "^6.0.0",
+		"react-dom": "^19.2.0",
+		"react-router": "^7.9.6",
+		"react-scripts": "^5.0.1",
+		"recharts": "^3.4.1",
+		"swiper": "^12.0.3",
+		"typed.js": "^2.1.0",
+		"zustand": "^5.0.8"
+	},
+	"devDependencies": {
+		"@mui/types": "^7.4.8",
+		"@testing-library/react": "^16.3.0",
+		"@types/navermaps": "^3.9.1",
+		"@types/node": "^24.10.1",
+		"@types/react": "^19.2.6",
+		"@types/react-dom": "^19.2.3",
+		"@types/react-router": "^5.1.20",
+		"typescript": "5.9.3",
+    "vite": "^7.2.4",
+    "@vitejs/plugin-react-swc": "^4.2.2",
+		"vite-plugin-compression": "^0.5.1"
+	}
 }

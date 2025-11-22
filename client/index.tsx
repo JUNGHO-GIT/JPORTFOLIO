@@ -8,8 +8,7 @@ import "@assets/styles/Mui.css";
 import '@assets/styles/Components.css';
 
 import {
-  BrowserRouter, Routes, Route, createRoot,
-  useEffect, memo
+  BrowserRouter, Routes, Route, createRoot, useEffect, memo
 } from '@exportReacts';
 
 import {

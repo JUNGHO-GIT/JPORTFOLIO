@@ -1,6 +1,6 @@
 // storage.ts
 
-const TITLE: string = process.env.REACT_APP_TITLE || "";
+const TITLE: string = import.meta.env.VITE_APP_TITLE || "";
 
 // 1. getLocal -------------------------------------------------------------------------------------
 export const getLocal = (key1: string, key2: string, key3: string) => {
