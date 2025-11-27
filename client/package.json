@@ -48,11 +48,15 @@
 		"whatwg-url": "12.0.1"
 	},
 	"scripts": {
-		"start": "bun .node/swc.cjs --bun --start --client",
-    "build": "bun .node/swc.cjs --bun --build --client --dev",
-		"build:prod": "bun .node/swc.cjs --bun --build --client --prod",
-		"reset": "bun .node/reset.cjs --bun --reset",
-		"fix": "bun .node/fix.cjs --bun --fix",
+		"start-client": "bun .node/swc.cjs --bun --start --client",
+		"start-server": "bun .node/swc.cjs --bun --start --server",
+    "build-client": "bun .node/swc.cjs --bun --build --client",
+    "build-server": "bun .node/swc.cjs --bun --build --server",
+    "git-fetch": "bun .node/git.cjs --bun --fetch",
+    "git-push": "bun .node/git.cjs --bun --push",
+    "fix": "bun .node/fix.cjs --bun --fix",
+    "reset": "bun .node/reset.cjs --bun --reset",
+    "vsce": "bun .node/vsce.cjs --bun --package",
 		"gcloud": "bun .node/gcloud.cjs --bun --deploy"
 	},
 	"dependencies": {
