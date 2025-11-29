@@ -1,6 +1,6 @@
 {
   "name": "jportfolio-server",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "private": true,
   "type": "module",
   "main": "index.ts",
@@ -37,15 +37,12 @@
     "whatwg-url": "12.0.1"
   },
   "scripts": {
-    "start-client": "bun .node/swc.cjs --bun --start --client",
     "start-server": "bun .node/swc.cjs --bun --start --server",
-    "build-client": "bun .node/swc.cjs --bun --build --client",
     "build-server": "bun .node/swc.cjs --bun --build --server",
     "git-fetch": "bun .node/git.cjs --bun --fetch",
     "git-push": "bun .node/git.cjs --bun --push",
     "fix": "bun .node/fix.cjs --bun --fix",
     "reset": "bun .node/reset.cjs --bun --reset",
-    "vsce": "bun .node/vsce.cjs --bun --package",
     "gcloud": "bun .node/gcloud.cjs --bun --deploy"
   },
   "dependencies": {
@@ -55,7 +52,7 @@
     "ajv-keywords": "^5.1.0",
     "axios": "^1.13.2",
     "bcryptjs": "^3.0.3",
-    "body-parser": "^2.2.0",
+    "body-parser": "^2.2.1",
     "cors": "^2.8.5",
     "date-fns": "^4.1.0",
     "dotenv": "^17.2.3",
@@ -68,7 +65,7 @@
     "mongodb": "^7.0.0",
     "mongoose": "^9.0.0",
     "multer": "^2.0.2",
-    "nodemailer": "^7.0.10",
+    "nodemailer": "^7.0.11",
     "oauth-signature": "^1.5.0",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
@@ -79,7 +76,7 @@
   },
   "devDependencies": {
     "@swc/cli": "0.7.9",
-    "@swc/core": "1.15.2",
+    "@swc/core": "1.15.3",
     "@swc/helpers": "0.5.17",
     "@types/bcryptjs": "^3.0.0",
     "@types/cors": "^2.8.19",
