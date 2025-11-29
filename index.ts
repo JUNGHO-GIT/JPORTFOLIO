@@ -47,8 +47,8 @@ const id = process.env.DB_USER;
 const pw = process.env.DB_PASS;
 const host = process.env.DB_HOST;
 const port = process.env.DB_PORT;
-// const db = process.env.DB_NAME
-const db = process.env.DB_TEST
+const db = process.env.DB_NAME;
+// const db = process.env.DB_TEST;
 const envStr = db === process.env.DB_TEST ? "DEVELOPMENT" : "PRODUCTION";
 
 mongoose.connect(`mongodb://${id}:${pw}@${host}:${port}/${db}`)

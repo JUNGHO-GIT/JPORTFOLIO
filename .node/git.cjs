@@ -15,8 +15,18 @@ const args1 = argv.find(arg => [`--npm`, `--pnpm`, `--yarn`, `--bun`].includes(a
 const args2 = argv.find(arg => [`--push`, `--fetch`].includes(arg))?.replace(`--`, ``) || ``;
 const winOrLinux = os.platform() === 'win32' ? `win` : `linux`;
 
-// 원격 기본 브랜치 감지 (고정 규칙: public → public/public/main, private → private/private/main) --------
-const getRemoteDefaultBranch = (remoteName = ``) => {
+// 프로젝트 설정 -------------------------------------------------------------------------------
+const CONFIG = {
+	domain: `junghomun.com`,
+	projectName: `JPORTFOLIO`,
+	localPort: {
+		client: 3000,
+		server: 4000,
+	}
+};
+
+// 원격 기본 브랜치 감지 -------------------------------------------------------------------------------
+const getRemoteDefaultBranch = (remoteName=``) => {
 	const fixedBranch = remoteName === `public` ? `public/main` : remoteName === `private` ? `private/main` : ``;
 
 	!fixedBranch ? (
@@ -25,6 +35,84 @@ const getRemoteDefaultBranch = (remoteName = ``) => {
 	) : logger(`info`, `원격 저장소 ${remoteName} 기본 브랜치(고정): ${fixedBranch}`);
 
 	return fixedBranch;
+};
+
+// env 파일 및 index 파일 수정 ---------------------------------------------------------------------
+const modifyEnvAndIndex = () => {
+	logger(`info`, `.env 및 index.ts 파일 수정 시작`);
+
+	const envFile = fs.readFileSync('.env', 'utf8');
+	const indexFile = fs.readFileSync('index.ts', 'utf8');
+
+	const linesEnv = envFile.split(/\r?\n/);
+	const linesIndex = indexFile.split(/\r?\n/);
+
+	const updatedEnv = linesEnv.map(line => (
+		line.startsWith('CLIENT_URL=') ? (
+			`CLIENT_URL=https://www.${CONFIG.domain}/${CONFIG.projectName}`
+		) : line.startsWith('GOOGLE_CALLBACK_URL=') ? (
+			`GOOGLE_CALLBACK_URL=https://www.${CONFIG.domain}/${CONFIG.projectName}/api/auth/google/callback`
+		) : (
+			line
+		)
+	));
+
+	const updatedIndex = linesIndex.map(line => (
+		line.trim().startsWith('// const db = process.env.DB_NAME') ? (
+			`const db = process.env.DB_NAME;`
+		) : line.trim().startsWith('const db = process.env.DB_TEST') ? (
+			`// const db = process.env.DB_TEST;`
+		) : (
+			line
+		)
+	));
+
+	const newEnvFile = updatedEnv.join(os.EOL);
+	const newIndexFile = updatedIndex.join(os.EOL);
+
+	fs.writeFileSync('.env', newEnvFile);
+	fs.writeFileSync('index.ts', newIndexFile);
+
+	logger(`info`, `.env 및 index.ts 파일 수정 완료`);
+};
+
+// env 파일 및 index 파일 복원 --------------------------------------------------------------------
+const restoreEnvAndIndex = () => {
+	logger(`info`, `.env 및 index.ts 파일 복원 시작`);
+
+	const envFile = fs.readFileSync('.env', 'utf8');
+	const indexFile = fs.readFileSync('index.ts', 'utf8');
+
+	const linesEnv = envFile.split(/\r?\n/);
+	const linesIndex = indexFile.split(/\r?\n/);
+
+	const updatedEnv = linesEnv.map(line => (
+		line.startsWith('CLIENT_URL=') ? (
+			`CLIENT_URL=http://localhost:${CONFIG.localPort.client}/${CONFIG.projectName}`
+		) : line.startsWith('GOOGLE_CALLBACK_URL=') ? (
+			`GOOGLE_CALLBACK_URL=http://localhost:${CONFIG.localPort.server}/${CONFIG.projectName}/api/auth/google/callback`
+		) : (
+			line
+		)
+	));
+
+	const updatedIndex = linesIndex.map(line => (
+		line.trim().startsWith('const db = process.env.DB_NAME') ? (
+			`// const db = process.env.DB_NAME;`
+		) : line.trim().startsWith('// const db = process.env.DB_TEST') ? (
+			`const db = process.env.DB_TEST;`
+		) : (
+			line
+		)
+	));
+
+	const newEnvFile = updatedEnv.join(os.EOL);
+	const newIndexFile = updatedIndex.join(os.EOL);
+
+	fs.writeFileSync('.env', newEnvFile);
+	fs.writeFileSync('index.ts', newIndexFile);
+
+	logger(`info`, `.env 및 index.ts 파일 복원 완료`);
 };
 
 // changelog 수정 -------------------------------------------------------------------------------
@@ -81,7 +169,7 @@ const modifyChangelog = () => {
 };
 
 // package.json 버전 수정 -----------------------------------------------------------------------
-const incrementVersion = (newVersion = ``) => {
+const incrementVersion = (newVersion=``) => {
 	logger(`info`, `package.json 버전 업데이트 시작: ${newVersion}`);
 
 	const packageJsonPath = `package.json`;
@@ -93,7 +181,7 @@ const incrementVersion = (newVersion = ``) => {
 };
 
 // git remote 존재 확인 -------------------------------------------------------------------------
-const checkRemoteExists = (remoteName = ``) => {
+const checkRemoteExists = (remoteName=``) => {
 	try {
 		execSync(`git remote get-url ${remoteName}`, { encoding: 'utf8', stdio: 'pipe' });
 		return true;
@@ -153,7 +241,7 @@ const gitFetch = () => {
 };
 
 // git push 공통 함수 ---------------------------------------------------------------------------
-const gitPush = (remoteName = ``, ignoreFilePath = ``, winOrLinux = ``) => {
+const gitPush = (remoteName=``, ignoreFilePath=``, winOrLinux=``) => {
 	const remoteExists = checkRemoteExists(remoteName);
 
 	!remoteExists ? (
@@ -211,9 +299,11 @@ const gitPush = (remoteName = ``, ignoreFilePath = ``, winOrLinux = ``) => {
 		})();
 
 		args2.includes(`push`) && (() => {
+			modifyEnvAndIndex();
 			incrementVersion(modifyChangelog());
 			gitPush(`public`, `.gitignore.public`, winOrLinux);
 			gitPush(`private`, `.gitignore.private`, winOrLinux);
+			restoreEnvAndIndex();
 			logger(`success`, `Git Push 완료`);
 		})();
 	}
