@@ -1,6 +1,6 @@
 {
   "name": "jportfolio-server",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "private": true,
   "type": "module",
   "main": "index.ts",
@@ -37,13 +37,13 @@
     "whatwg-url": "12.0.1"
   },
   "scripts": {
-    "start-server": "bun .node/swc.cjs --bun --start --server",
-    "build-server": "bun .node/swc.cjs --bun --build --server",
+    "start": "bun .node/swc.cjs --bun --start --server",
+    "build": "bun .node/swc.cjs --bun --build --server",
     "git-fetch": "bun .node/git.cjs --bun --fetch",
     "git-push": "bun .node/git.cjs --bun --push",
     "fix": "bun .node/fix.cjs --bun --fix",
     "reset": "bun .node/reset.cjs --bun --reset",
-    "gcloud": "bun .node/gcloud.cjs --bun --deploy"
+    "gcloud": "bun .node/gcloud.cjs --bun --server"
   },
   "dependencies": {
     "@google-cloud/storage": "^7.17.3",

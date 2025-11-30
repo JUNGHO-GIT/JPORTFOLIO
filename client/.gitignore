@@ -74,6 +74,7 @@
 # 3. env files
 **/*.env
 **/*.env.*
+**/.node/env.cjs
 **/*.properties
 **/*.properties.*
 **/*.classpath
@@ -175,10 +176,6 @@
 **/merge.cjs.*
 **/merge.sh
 **/merge.sh.*
-**/gcloud.cjs
-**/gcloud.cjs.*
-**/gcloud.sh
-**/gcloud.sh.*
 **/.gitignore.public
 **/.gitignore.public.*
 **/.gitignore.private
