@@ -7,7 +7,8 @@ const os = require(`os`);
 const fs = require(`fs`);
 const { execSync } = require(`child_process`);
 const { logger, runPrompt } = require(`../lib/utils.cjs`);
-const { CONFIG } = require(`../lib/env.cjs`);
+const { env } = require(`../lib/env.cjs`);
+const { settings } = require(`../lib/settings.cjs`);
 
 // 인자 파싱 ---------------------------------------------------------------------------------
 const TITLE = `git.cjs`;
@@ -18,10 +19,10 @@ const osType = os.platform() === `win32` ? `win` : `linux`;
 
 // 원격 기본 브랜치 감지 ----------------------------------------------------------------------
 const getRemoteDefaultBranch = (remoteName=``) => {
-	const branch = remoteName === CONFIG.git.remotes.public.name ? (
-		CONFIG.git.remotes.public.branch
-	) : remoteName === CONFIG.git.remotes.private.name ? (
-		CONFIG.git.remotes.private.branch
+	const branch = remoteName === settings.git.remotes.public.name ? (
+		settings.git.remotes.public.branch
+	) : remoteName === settings.git.remotes.private.name ? (
+		settings.git.remotes.private.branch
 	) : ``;
 
 	branch
@@ -65,7 +66,7 @@ const setRemoteDefaultBranch = (remoteName=``) => {
 				execSync(`gh api repos/${owner}/${repo} -X PATCH -f default_branch=${targetBranch}`, { stdio: `pipe` });
 				logger(`success`, `GitHub default branch 변경 완료: ${targetBranch}`);
 
-				// 기존 main ��랜치 ��제 (default가 아니게 된 후)
+				// 기존 main 브랜치 ��제 (default가 아니게 된 후)
 				targetBranch !== `main` && (() => {
 					try {
 						execSync(`git push ${remoteName} --delete main`, { stdio: `pipe` });
@@ -89,8 +90,8 @@ const cleanupBranches = () => {
 
 	// 로컬 브랜치: public/main, private/main -----
 	const localDefaultBranches = [
-		CONFIG.git.remotes.public.branch,
-		CONFIG.git.remotes.private.branch
+		settings.git.remotes.public.branch,
+		settings.git.remotes.private.branch
 	].filter(Boolean);
 	const uniqueDefaults = [...new Set(localDefaultBranches)];
 
@@ -127,7 +128,7 @@ const cleanupBranches = () => {
 	})();
 
 	// 2. 원격 브랜치 정리 -----
-	[CONFIG.git.remotes.public.name, CONFIG.git.remotes.private.name].forEach(remoteName => {
+	[settings.git.remotes.public.name, settings.git.remotes.private.name].forEach(remoteName => {
 		const remoteExists = checkRemoteExists(remoteName);
 		!remoteExists && logger(`info`, `Remote '${remoteName}' 존재하지 않음 - 원격 브랜치 정리 건너뜀`);
 
@@ -177,7 +178,7 @@ const clearGitCache = () => {
 		logger(`success`, `Git 캐시 초기화 완료`);
 	}
 	catch (e) {
-		logger(`error`, `Git 캐시 초기화 실패: ${e instanceof Error ? e.message : String(e)}`);
+		logger(`error`, `Git 캐시 초���화 실패: ${e instanceof Error ? e.message : String(e)}`);
 		throw e;
 	}
 };
@@ -208,15 +209,15 @@ const modifyEnvAndIndex = () => {
 		const envRules = [
 			{
 				match: (line=``) => line.startsWith(`CLIENT_URL=`),
-				replace: () => `CLIENT_URL=https://www.${CONFIG.domain}/${CONFIG.projectName}`
+				replace: () => `CLIENT_URL=https://www.${env.domain}/${env.projectName}`
 			},
 			{
 				match: (line=``) => line.startsWith(`GOOGLE_CALLBACK_URL=`),
-				replace: () => `GOOGLE_CALLBACK_URL=https://www.${CONFIG.domain}/${CONFIG.projectName}/${CONFIG.gcp.callback}`
+				replace: () => `GOOGLE_CALLBACK_URL=https://www.${env.domain}/${env.projectName}/${env.gcp.callback}`
 			}
 		];
 		fs.writeFileSync(`.env`, transformLines(envContent, envRules));
-		logger(`info`, `.env 파일 수정 완료`);
+		logger(`info`, `.env 파일 수정 완���`);
 	})();
 
 	indexExists && (() => {
@@ -253,11 +254,11 @@ const restoreEnvAndIndex = () => {
 		const envRules = [
 			{
 				match: (line=``) => line.startsWith(`CLIENT_URL=`),
-				replace: () => `CLIENT_URL=http://localhost:${CONFIG.localPort.client}/${CONFIG.projectName}`
+				replace: () => `CLIENT_URL=http://localhost:${env.localPort.client}/${env.projectName}`
 			},
 			{
 				match: (line=``) => line.startsWith(`GOOGLE_CALLBACK_URL=`),
-				replace: () => `GOOGLE_CALLBACK_URL=http://localhost:${CONFIG.localPort.server}/${CONFIG.projectName}/${CONFIG.gcp.callback}`
+				replace: () => `GOOGLE_CALLBACK_URL=http://localhost:${env.localPort.server}/${env.projectName}/${env.gcp.callback}`
 			}
 		];
 		fs.writeFileSync(`.env`, transformLines(envContent, envRules));
@@ -333,7 +334,7 @@ const incrementVersion = (newVersion=``) => {
 	!pkgExists && newVersion && logger(`info`, `package.json 파일 없음 - 건너뜀`);
 
 	pkgExists && newVersion && (() => {
-		logger(`info`, `package.json 버전 ��데이트 ��작: ${newVersion}`);
+		logger(`info`, `package.json 버전 업데이트 ��작: ${newVersion}`);
 		const pkg = JSON.parse(fs.readFileSync(pkgPath, `utf8`));
 		pkg.version = newVersion;
 		fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + `\n`, `utf8`);
@@ -344,14 +345,14 @@ const incrementVersion = (newVersion=``) => {
 // git fetch ---------------------------------------------------------------------------------
 const gitFetch = () => {
 	try {
-		const privateExists = checkRemoteExists(CONFIG.git.remotes.private.name);
-		const publicExists = checkRemoteExists(CONFIG.git.remotes.public.name);
+		const privateExists = checkRemoteExists(settings.git.remotes.private.name);
+		const publicExists = checkRemoteExists(settings.git.remotes.public.name);
 
 		privateExists
-			? logger(`info`, `Private remote 감지 - ${CONFIG.git.remotes.private.name}만 fetch 진행`)
-			: logger(`info`, `Private remote 없음 - ${CONFIG.git.remotes.public.name} fetch 진행`);
+			? logger(`info`, `Private remote 감지 - ${settings.git.remotes.private.name}만 fetch 진행`)
+			: logger(`info`, `Private remote 없음 - ${settings.git.remotes.public.name} fetch 진행`);
 
-		const targetRemote = privateExists ? CONFIG.git.remotes.private.name : CONFIG.git.remotes.public.name;
+		const targetRemote = privateExists ? settings.git.remotes.private.name : settings.git.remotes.public.name;
 		const targetBranch = getRemoteDefaultBranch(targetRemote);
 
 		!privateExists && !publicExists && (logger(`error`, `사용 가능한 remote가 없습니다`), process.exit(1));
@@ -392,7 +393,7 @@ const gitPush = (remoteName="", ignoreFilePath="", msg="") => {
 
 		const statusOutput = execSync(`git status --porcelain`, { encoding: `utf8` }).trim();
 		statusOutput && (() => {
-			logger(`info`, `변경사항 ��지 - 커밋 진행`);
+			logger(`info`, `변경사항 감지 - 커밋 진행`);
 			const tempFile = `.git-commit-msg.tmp`;
 			const commitContent = msg ? msg : (() => {
 				const now = new Date();
@@ -425,8 +426,8 @@ const gitPush = (remoteName="", ignoreFilePath="", msg="") => {
 
 	try {
 		// 기본 브랜치 설정 및 불필요 브랜치 정리
-		setRemoteDefaultBranch(CONFIG.git.remotes.public.name);
-		setRemoteDefaultBranch(CONFIG.git.remotes.private.name);
+		setRemoteDefaultBranch(settings.git.remotes.public.name);
+		setRemoteDefaultBranch(settings.git.remotes.private.name);
 		cleanupBranches();
 
 		args2 === `fetch` && (() => {
@@ -440,8 +441,8 @@ const gitPush = (remoteName="", ignoreFilePath="", msg="") => {
 
 			modifyEnvAndIndex();
 			incrementVersion(modifyChangelog(commitMsg));
-			gitPush(CONFIG.git.remotes.public.name, `.gitignore.public`, commitMsg);
-			gitPush(CONFIG.git.remotes.private.name, `.gitignore.private`, commitMsg);
+			gitPush(settings.git.remotes.public.name, `.gitignore.public`, commitMsg);
+			gitPush(settings.git.remotes.private.name, `.gitignore.private`, commitMsg);
 			restoreEnvAndIndex();
 			logger(`success`, `Git Push 완료`);
 		})();

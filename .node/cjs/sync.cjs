@@ -16,6 +16,12 @@ const argv = process.argv.slice(2);
 const args1 = argv.find(arg => [`--npm`, `--pnpm`, `--yarn`, `--bun`].includes(arg))?.replace(`--`, ``) ?? ``;
 const args2 = argv.find(arg => [`--sync`].includes(arg))?.replace(`--`, ``) ?? ``;
 const args3 = argv.find(arg => [`--server`, `--client`].includes(arg))?.replace(`--`, ``) ?? ``;
+const mode = args3 === `client` ? `client` : `server`;
+
+// 스크립트 위치 기준 프로젝트 루트 계산 ------------------------------------------------------
+const SCRIPT_DIR = __dirname;
+const NODE_ROOT = path.resolve(SCRIPT_DIR, `..`);
+const PROJECT_ROOT = path.resolve(NODE_ROOT, `..`);
 
 // CDN URL 생성 함수 -------------------------------------------------------------------------
 const getCdnUrls = {
@@ -35,8 +41,12 @@ const httpGet = (url = ``, token = ``) => new Promise((resolve, reject) => {
 			reject(new Error(`HTTP ${res.statusCode}: ${url}`))
 		) : (() => {
 			let data = ``;
-			res.on(`data`, chunk => data += chunk);
-			res.on(`end`, () => resolve(data));
+			res.on(`data`, chunk => {
+				data += chunk;
+			});
+			res.on(`end`, () => {
+				resolve(data);
+			});
 		})();
 	});
 	req.on(`error`, reject);
@@ -46,11 +56,70 @@ const httpGet = (url = ``, token = ``) => new Promise((resolve, reject) => {
 	});
 });
 
-// 모든 파일 동기화 --------------------------------------------------------------------------
+// server / client 동기화 루트 결정 ----------------------------------------------------------
+const resolveSyncRoot = (rootMode = `server`) => {
+	const isClientRoot = path.basename(PROJECT_ROOT) === `client`;
+	const hasClientSub = fs.existsSync(path.join(PROJECT_ROOT, `client`));
+	const baseRoot = PROJECT_ROOT;
+
+	const syncRoot =
+		rootMode === `client` ? (
+			isClientRoot ? (
+				baseRoot
+			) : hasClientSub ? (
+				path.join(baseRoot, `client`)
+			) : (
+				baseRoot
+			)
+		) : (
+			baseRoot
+		);
+
+	return syncRoot;
+};
+
+// 폴더 스킵 규칙 ---------------------------------------------------------------------------
+const shouldSkipFolder = (rootMode = `server`, relTargetPath = ``) => {
+	const normalized = relTargetPath ? relTargetPath.replace(/\\/g, `/`) : ``;
+	const segments = normalized ? normalized.split(`/`) : [];
+	const hasClient = segments.includes(`client`);
+	const hasServer = segments.includes(`server`);
+
+	const skip =
+		rootMode === `server` ? (
+			hasClient
+		) : rootMode === `client` ? (
+			hasServer
+		) : (
+			false
+		);
+
+	return skip;
+};
+
+// 파일 스킵 규칙 ---------------------------------------------------------------------------
+const shouldSkipFile = (rootMode = `server`, fileName = ``) => {
+	const isClientFile = fileName.includes(`client`);
+	const isServerFile = fileName.includes(`server`);
+
+	const skip =
+		rootMode === `server` ? (
+			isClientFile && !isServerFile
+		) : rootMode === `client` ? (
+			isServerFile && !isClientFile
+		) : (
+			false
+		);
+
+	return skip;
+};
+
+// 모든 파일 동기화 (settings.cdn.folders 순서 그대로, 동기 실행) ------------------------------
 const syncAll = async () => {
 	logger(`info`, `GitHub CDN 동기화 시작`);
 
 	const {cdn, git} = settings;
+
 	const isPrivate = cdn.defaultRemote === `private`;
 	const owner = cdn.owner;
 	const repo = isPrivate ? cdn.repoPrivate : cdn.repo;
@@ -58,52 +127,102 @@ const syncAll = async () => {
 	const cdnType = cdn.defaultCdn;
 	const token = isPrivate ? process.env.GITHUB_TOKEN ?? `` : ``;
 
-	// args3에 따라 루트 경로 설정
-	const baseCwd = process.cwd();
-	const cwd = args3 === `client` ? path.join(baseCwd, `client`) : baseCwd;
+	const buildUrl = getCdnUrls[cdnType];
+	const syncRoot = resolveSyncRoot(mode);
+
+	let canRun = true;
+
+	!buildUrl && (
+		logger(`error`, `지원하지 않는 CDN 타입: ${cdnType}`),
+		canRun = false
+	);
+
+	(!Array.isArray(cdn.folders) || cdn.folders.length === 0) && (
+		logger(`warn`, `동기화 대상 폴더가 설정되지 않았습니다 (settings.cdn.folders 비어 있음)`),
+		canRun = false
+	);
+
+	!fs.existsSync(syncRoot) && (
+		logger(`error`, `동기화 루트 경로가 존재하지 않습니다: ${syncRoot}`),
+		canRun = false
+	);
 
 	logger(`info`, `원격: ${cdn.defaultRemote}`);
 	logger(`info`, `저장소: ${owner}/${repo}`);
 	logger(`info`, `브랜치: ${branch}`);
-	logger(`info`, `대상 타입: ${args3 || `default`}`);
-	logger(`info`, `루트 경로: ${cwd}`);
+	logger(`info`, `대상 타입: ${mode}`);
+	logger(`info`, `SCRIPT_DIR: ${SCRIPT_DIR}`);
+	logger(`info`, `PROJECT_ROOT: ${PROJECT_ROOT}`);
+	logger(`info`, `동기화 루트 경로: ${syncRoot}`);
 
-	// 폴더별 동기화
-	for (const folder of cdn.folders) {
-		const {sourcePath, targetPath: relTargetPath, files} = folder;
-		const targetDir = relTargetPath ? path.join(cwd, relTargetPath) : cwd;
-		const isRoot = !relTargetPath;
-		const displayPath = relTargetPath || `루트`;
+	if (canRun) {
+		const folders = cdn.folders;
 
-		logger(`info`, `대상 폴더: ${displayPath}`);
+		for (let folderIndex = 0; folderIndex < folders.length; folderIndex += 1) {
+			const folder = folders[folderIndex];
 
-		// 폴더가 없으면 생성 (기존 폴더는 유지하여 로컬 파일 보존)
-		if (!isRoot && !fs.existsSync(targetDir)) {
-			fs.mkdirSync(targetDir, {recursive: true});
-			logger(`info`, `폴더 생성: ${displayPath}`);
-		}
+			if (!folder || !Array.isArray(folder.files)) {
+				logger(`warn`, `잘못된 폴더 설정 감지, 건너뜀: ${JSON.stringify(folder)}`);
+				continue;
+			}
 
-		// 파일별 다운로드
-		for (const fileName of files) {
-			const targetFilePath = path.join(targetDir, fileName);
-			const remoteFilePath = `${sourcePath}/${fileName}`;
-			const url = getCdnUrls[cdnType](owner, repo, branch, remoteFilePath);
+			const {sourcePath, targetPath: relTargetPath, files} = folder;
+			const normalizedTarget = relTargetPath ? relTargetPath.replace(/\\/g, `/`) : ``;
 
-			logger(`info`, `다운로드: ${fileName}`);
+			if (shouldSkipFolder(mode, relTargetPath || ``)) {
+				logger(`info`, `모드(${mode})에서 제외된 폴더: ${relTargetPath || `루트`} (index: ${folderIndex})`);
+				continue;
+			}
 
-			try {
-				const content = await httpGet(url, token);
+			const targetDir = !relTargetPath ? (
+				syncRoot
+			) : normalizedTarget === `client` ? (
+				syncRoot
+			) : (
+				path.join(syncRoot, relTargetPath)
+			);
 
-				// 파일이 존재하면 무조건 삭제 후 다시 작성
-				if (fs.existsSync(targetFilePath)) {
-					fs.unlinkSync(targetFilePath);
+			const isRoot = !relTargetPath || targetDir === syncRoot;
+			const displayPath = relTargetPath || `루트`;
+
+			logger(`info`, `대상 폴더: ${displayPath} (index: ${folderIndex})`);
+
+			!isRoot && !fs.existsSync(targetDir) && (
+				fs.mkdirSync(targetDir, {recursive: true}),
+				logger(`info`, `폴더 생성: ${displayPath} (${targetDir})`)
+			);
+
+			for (let fileIndex = 0; fileIndex < files.length; fileIndex += 1) {
+				const fileName = files[fileIndex];
+
+				if (!fileName) {
+					logger(`warn`, `파일명이 비어 있어 건너뜀 (폴더: ${displayPath})`);
+					continue;
 				}
 
-				fs.writeFileSync(targetFilePath, content, `utf8`);
-				logger(`info`, `생성: ${fileName}`);
-			}
-			catch (e) {
-				logger(`error`, `파일 가져오기 실패: ${fileName} - ${e instanceof Error ? e.message : String(e)}`);
+				if (shouldSkipFile(mode, fileName)) {
+					logger(`info`, `모드(${mode})에서 제외된 파일: ${fileName} (폴더: ${displayPath})`);
+					continue;
+				}
+
+				const targetFilePath = path.join(targetDir, fileName);
+
+				const remoteFilePath = `${sourcePath}/${fileName}`;
+				const url = buildUrl(owner, repo, branch, remoteFilePath);
+
+				logger(`info`, `다운로드 시작: ${fileName} (${url})`);
+
+				try {
+					const content = await httpGet(url, token);
+					fs.writeFileSync(targetFilePath, content, `utf8`);
+					logger(`info`, `동기화 완료: ${fileName} → ${targetFilePath}`);
+				}
+				catch (e) {
+					logger(
+						`error`,
+						`파일 가져오기 실패: ${fileName} - ${e instanceof Error ? e.message : String(e)}`,
+					);
+				}
 			}
 		}
 	}
@@ -116,13 +235,17 @@ const syncAll = async () => {
 	logger(`info`, `스크립트 실행: ${TITLE}`);
 	logger(`info`, `전달된 인자 1: ${args1 || `none`}`);
 	logger(`info`, `전달된 인자 2: ${args2 || `none`}`);
-	logger(`info`, `전달된 인자 3: ${args3 || `none`}`);
+	logger(`info`, `전달된 인자 3: ${args3 || `none`} (mode: ${mode})`);
 
 	try {
-		[`npm`, `pnpm`, `yarn`, `bun`].includes(args1) && args2 === `sync` && (
+		const canSync =
+			[`npm`, `pnpm`, `yarn`, `bun`].includes(args1) &&
+			args2 === `sync`;
+
+		canSync ? (
 			await syncAll(),
 			logger(`info`, `CDN 동기화 완료`)
-		);
+		) : logger(`info`, `동기화 조건 불일치로 실행하지 않음`);
 	}
 	catch (e) {
 		logger(`error`, `${TITLE} 스크립트 실행 실패: ${e instanceof Error ? e.message : String(e)}`);
