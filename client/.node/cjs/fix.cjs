@@ -6,8 +6,8 @@
 const os = require(`os`);
 const fs = require(`fs`);
 const { execSync } = require(`child_process`);
-const { logger } = require(`./utils.cjs`);
-const { CONFIG } = require(`./env.cjs`);
+const { logger } = require(`../lib/utils.cjs`);
+const { CONFIG } = require(`../lib/env.cjs`);
 
 // 인자 파싱 ---------------------------------------------------------------------------------
 const TITLE = `git.cjs`;
@@ -212,7 +212,7 @@ const gitPush = (remoteName=``, ignoreFilePath=``) => {
 	!remoteExists && logger(`info`, `Remote '${remoteName}' 존재하지 않음 - 건너뜀`);
 	remoteExists && (() => {
 		const targetBranch = getRemoteDefaultBranch(remoteName);
-		!targetBranch && (logger(`error`, `원격 기본 브랜치를 찾을 수 없습니다: ${remoteName}`), process.exit(1));
+		!targetBranch && (logger(`error`, `원격 기본 브랜치를 찾을 수 없습���다: ${remoteName}`), process.exit(1));
 
 		logger(`info`, `Git Push 시작: ${remoteName}`);
 
@@ -248,7 +248,7 @@ const gitPush = (remoteName=``, ignoreFilePath=``) => {
 
 // 실행 --------------------------------------------------------------------------------------
 (() => {
-	logger(`info`, `스크립트 실행: ${TITLE}`);
+	logger(`info`, `스크��트 실행: ${TITLE}`);
 	logger(`info`, `운영체제: ${osType}`);
 	logger(`info`, `전달된 인자 1: ${args1 || `none`}`);
 	logger(`info`, `전달된 인자 2: ${args2 || `none`}`);
