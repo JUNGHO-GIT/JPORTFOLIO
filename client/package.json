@@ -1,102 +1,115 @@
 {
-	"name": "jportfolio-client",
-	"homepage": "/JPORTFOLIO",
-	"version": "1.0.0",
-	"type": "module",
-	"main": "index.tsx",
-	"license": "Apache-2.0",
-	"eslintConfig": {
-		"extends": [
-			"react-app",
-			"react-app/jest"
-		],
-		"rules": {
-			"import/extensions": "off",
-			"import/prefer-default-export": "off",
-			"no-console": "off",
-			"no-underscore-dangle": "off",
-			"no-unused-vars": "off",
-			"react-hooks/exhaustive-deps": "off",
-			"react-hooks/rules-of-hooks": "warn",
-			"@typescript-eslint/no-unused-expressions": "off",
-			"@typescript-eslint/no-unused-vars": [
-				"off",
-				{
-					"varsIgnorePattern": "^_",
-					"argsIgnorePattern": "^_"
-				}
-			]
-		}
-	},
-	"browserslist": {
-		"production": [
-			">0.2%",
-			"not dead",
-			"not op_mini all"
-		],
-		"development": [
-			"last 1 chrome version",
-			"last 1 firefox version",
-			"last 1 safari version"
-		]
-	},
-	"engines": {
-		"node": "16.x"
-	},
-	"overrides": {
-		"webidl-conversions": "6.1.0",
-		"whatwg-url": "12.0.1"
-	},
-	"scripts": {
-    "sync": "bun .node/cjs/sync.cjs --bun --sync --client",
-    "start": "bun .node/cjs/swc.cjs --bun --start --client",
-    "build": "bun .node/cjs/swc.cjs --bun --build --client",
-    "fix": "bun .node/cjs/fix.cjs --bun --fix",
-    "reset": "bun .node/cjs/reset.cjs --bun --reset",
-    "vsce": "bun .node/cjs/vsce.cjs --bun --package",
-		"gcloud": "bun .node/cjs/gcloud.cjs --bun --client",
-    "git-fetch": "bun .node/cjs/git.cjs --bun --fetch",
-    "git-push": "bun .node/cjs/git.cjs --bun --push"
-	},
-	"dependencies": {
-		"@emotion/react": "^11.14.0",
-		"@emotion/styled": "^11.14.1",
-		"@emotion/utils": "^1.4.2",
-		"@mui/material": "^7.3.5",
-		"@mui/system": "^7.3.5",
-		"@mui/x-date-pickers": "^8.19.0",
-		"@react-hooks-library/core": "^0.6.2",
-		"ajv": "^8.17.1",
-		"ajv-keywords": "^5.1.0",
-		"axios": "^1.13.2",
-		"countries-and-timezones": "^3.8.0",
-		"date-fns": "^4.1.0",
-		"iso-country-currency": "^0.7.2",
-		"material-ui-popup-state": "^5.3.6",
-		"moment": "^2.30.1",
-		"moment-timezone": "^0.6.0",
-		"mui-file-input": "^7.0.0",
-		"react": "^19.2.0",
-		"react-calendar": "^6.0.0",
-		"react-dom": "^19.2.0",
-		"react-router": "^7.9.6",
-		"react-scripts": "^5.0.1",
-		"recharts": "^3.5.1",
-		"swiper": "^12.0.3",
-		"typed.js": "^2.1.0",
-		"zustand": "^5.0.8"
-	},
-	"devDependencies": {
-		"@mui/types": "^7.4.8",
-		"@testing-library/react": "^16.3.0",
-		"@types/navermaps": "^3.9.1",
-		"@types/node": "^24.10.1",
-		"@types/react": "^19.2.7",
-		"@types/react-dom": "^19.2.3",
-		"@types/react-router": "^5.1.20",
-		"typescript": "5.9.3",
-    "vite": "^7.2.4",
+  "name": "jportfolio-client",
+  "homepage": "/JPORTFOLIO",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "index.tsx",
+  "license": "Apache-2.0",
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ],
+    "rules": {
+      "import/extensions": "off",
+      "import/prefer-default-export": "off",
+      "no-console": "off",
+      "no-underscore-dangle": "off",
+      "no-unused-vars": "off",
+      "react-hooks/exhaustive-deps": "off",
+      "react-hooks/rules-of-hooks": "warn",
+      "@typescript-eslint/no-unused-expressions": "off",
+      "@typescript-eslint/no-unused-vars": [
+        "off",
+        {
+          "varsIgnorePattern": "^_",
+          "argsIgnorePattern": "^_"
+        }
+      ]
+    }
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "engines": {
+    "node": "16.x"
+  },
+  "overrides": {
+    "webidl-conversions": "6.1.0",
+    "whatwg-url": "12.0.1"
+  },
+  "scripts": {
+    "sync": "bun .node/mjs/sync.mjs --bun --sync --client",
+    "start": "bun .node/mjs/swc.mjs --bun --start --client",
+    "build": "bun .node/mjs/swc.mjs --bun --build --client",
+    "fix": "bun .node/mjs/fix.mjs --bun --fix",
+    "reset": "bun .node/mjs/reset.mjs --bun --reset",
+    "gcloud": "bun .node/mjs/gcloud.mjs --bun --client",
+    "git-push-y": "bun .node/mjs/git.mjs --bun --push --y",
+    "git-push-n": "bun .node/mjs/git.mjs --bun --push --n"
+  },
+  "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@emotion/utils": "^1.4.2",
+    "@mui/material": "^7.3.5",
+    "@mui/system": "^7.3.5",
+    "@mui/x-date-pickers": "^8.19.0",
+    "@react-hooks-library/core": "^0.6.2",
+    "ajv": "^8.17.1",
+    "ajv-keywords": "^5.1.0",
+    "axios": "^1.13.2",
+    "countries-and-timezones": "^3.8.0",
+    "date-fns": "^4.1.0",
+    "iso-country-currency": "^0.7.2",
+    "material-ui-popup-state": "^5.3.6",
+    "moment": "^2.30.1",
+    "moment-timezone": "^0.6.0",
+    "mui-file-input": "^7.0.0",
+    "react": "^19.2.0",
+    "react-calendar": "^6.0.0",
+    "react-dom": "^19.2.0",
+    "react-router": "^7.9.6",
+    "react-scripts": "^5.0.1",
+    "recharts": "^3.5.1",
+    "swiper": "^12.0.3",
+    "typed.js": "^2.1.0",
+    "zustand": "^5.0.8"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "@mui/types": "^7.4.8",
+    "@swc/cli": "0.7.9",
+    "@swc/core": "1.15.3",
+    "@swc/helpers": "0.5.17",
+    "@testing-library/react": "^16.3.0",
+    "@types/eslint": "^9.6.1",
+    "@types/eslint__js": "^9.14.0",
+    "@types/navermaps": "^3.9.1",
+    "@types/node": "24.10.1",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "@types/react-router": "^5.1.20",
+    "@typescript-eslint/eslint-plugin": "8.48.1",
+    "@typescript-eslint/parser": "8.48.1",
     "@vitejs/plugin-react-swc": "^4.2.2",
-		"vite-plugin-compression": "^0.5.1"
-	}
+    "esbuild": "0.27.1",
+    "eslint": "9.39.1",
+    "globals": "^16.5.0",
+    "ts-morph": "27.0.2",
+    "ts-prune": "0.10.3",
+    "tsc-alias": "1.8.16",
+    "typescript": "5.9.3",
+    "vite": "^7.2.4",
+    "vite-plugin-compression": "^0.5.1"
+  }
 }
