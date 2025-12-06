@@ -1,6 +1,6 @@
 {
   "name": "jportfolio-server",
-  "version": "1.2.8",
+  "version": "1.2.9",
   "private": true,
   "type": "module",
   "main": "index.ts",
@@ -37,15 +37,15 @@
     "whatwg-url": "12.0.1"
   },
   "scripts": {
-    "sync": "bun .node/cjs/sync.cjs --bun --sync --server",
-    "start": "bun .node/cjs/swc.cjs --bun --start --server",
-    "build": "bun .node/cjs/swc.cjs --bun --build --server",
-    "fix": "bun .node/cjs/fix.cjs --bun --fix",
-    "reset": "bun .node/cjs/reset.cjs --bun --reset",
-    "vsce": "bun .node/cjs/vsce.cjs --bun --package",
-    "gcloud": "bun .node/cjs/gcloud.cjs --bun --server",
-    "git-fetch": "bun .node/cjs/git.cjs --bun --fetch",
-    "git-push": "bun .node/cjs/git.cjs --bun --push"
+    "sync": "bun .node/mjs/sync.mjs --bun --sync --server",
+    "start": "bun .node/mjs/swc.mjs --bun --start --server",
+    "build": "bun .node/mjs/swc.mjs --bun --build --server",
+    "fix": "bun .node/mjs/fix.mjs --bun --fix",
+    "reset": "bun .node/mjs/reset.mjs --bun --reset",
+    "vsce": "bun .node/mjs/vsce.mjs --bun --package",
+    "gcloud": "bun .node/mjs/gcloud.mjs --bun --server",
+    "git-push-y": "bun .node/mjs/git.mjs --bun --push --y",
+    "git-push-n": "bun .node/mjs/git.mjs --bun --push --n"
   },
   "dependencies": {
     "@google-cloud/storage": "^7.17.3",
@@ -77,11 +77,14 @@
     "stripe": "^20.0.0"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.1",
     "@swc/cli": "0.7.9",
     "@swc/core": "1.15.3",
     "@swc/helpers": "0.5.17",
     "@types/bcryptjs": "^3.0.0",
     "@types/cors": "^2.8.19",
+    "@types/eslint": "^9.6.1",
+    "@types/eslint__js": "^9.14.0",
     "@types/express": "^5.0.5",
     "@types/express-session": "^1.18.2",
     "@types/jsdom": "^27.0.0",
@@ -93,12 +96,16 @@
     "@types/passport-google-oauth20": "^2.0.17",
     "@types/qs": "^6.14.0",
     "@types/swiper": "^6.0.0",
-    "jsdom": "^27.2.0",
-    "tslib": "^2.8.1",
+    "@typescript-eslint/eslint-plugin": "8.48.1",
+    "@typescript-eslint/parser": "8.48.1",
     "esbuild": "0.27.0",
+    "eslint": "9.39.1",
+    "globals": "^16.5.0",
+    "jsdom": "^27.2.0",
     "ts-morph": "^27.0.2",
     "ts-prune": "0.10.3",
     "tsc-alias": "1.8.16",
+    "tslib": "^2.8.1",
     "typescript": "5.9.3"
   }
 }

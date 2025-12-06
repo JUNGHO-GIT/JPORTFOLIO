@@ -44,10 +44,7 @@ const f = () => {}
 **INCORRECT:**
 ```js
 // ==== f ====
-// -------
-...
-// f
-// -------
+const f = () => {}
 ```
 
 # 2-1. TERNARY CHAINS
@@ -100,6 +97,7 @@ return rs;
 ```js
 if (p2) {
 } else { f(e); }
+if (p2) return rs; else f(e);
 ```
 **CORRECT:**
 ```js
@@ -114,5 +112,8 @@ try {
 }
 catch (Exception e) {
   f2();
+}
+finally {
+  f3();
 }
 ```
