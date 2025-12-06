@@ -5,10 +5,10 @@
  * @since 2025-12-03
  */
 
-import path from "path";
-import process from "process";
-import { fileURLToPath } from "url";
-import { logger, delDir, delFile, runCmd } from "../lib/utils.mjs";
+import path from 'path';
+import process from 'process';
+import { fileURLToPath } from 'url';
+import { logger, delDir, delFile, runCmd } from '../lib/utils.mjs';
 
 // 1. 인자 파싱 ------------------------------------------------------------------------------
 const __filename = fileURLToPath(import.meta.url);

@@ -5,15 +5,15 @@
  * @since 2025-12-03
  */
 
-import os from "os";
-import fs from "fs";
-import path from "path";
-import process from "process";
-import { execSync } from "child_process";
-import { fileURLToPath } from "url";
-import { logger, runPrompt, fileExists } from "../lib/utils.mjs";
-import { env } from "../lib/env.mjs";
-import { settings } from "../lib/settings.mjs";
+import os from 'os';
+import fs from 'fs';
+import path from 'path';
+import process from 'process';
+import { execSync } from 'child_process';
+import { fileURLToPath } from 'url';
+import { logger, runPrompt, fileExists } from '../lib/utils.mjs';
+import { env } from '../lib/env.mjs';
+import { settings } from '../lib/settings.mjs';
 
 // 1. 인자 파싱 ------------------------------------------------------------------------------
 const __filename = fileURLToPath(import.meta.url);

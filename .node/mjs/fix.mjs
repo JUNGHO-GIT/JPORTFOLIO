@@ -5,13 +5,13 @@
  * @since 2025-12-4
  */
 
-import fs from "fs";
-import path from "path";
-import process from "process";
-import { Project } from "ts-morph";
-import { fileURLToPath } from "url";
-import { createRequire } from "module";
-import { logger, spawnWrapper } from "../lib/utils.mjs";
+import fs from 'fs';
+import path from 'path';
+import process from 'process';
+import { Project } from 'ts-morph';
+import { fileURLToPath } from 'url';
+import { createRequire } from 'module';
+import { logger, spawnWrapper } from '../lib/utils.mjs';
 
 // 1. 인자 파싱 ------------------------------------------------------------------------------
 const __filename = fileURLToPath(import.meta.url);

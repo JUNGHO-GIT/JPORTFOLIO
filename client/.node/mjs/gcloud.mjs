@@ -13,25 +13,34 @@ import { logger, getPlatform, execCommand, fileExists } from "../lib/utils.mjs";
 import { env } from "../lib/env.mjs";
 import { settings } from "../lib/settings.mjs";
 
-// 1. 인자 파싱 ------------------------------------------------------------------------------
+// 1. 인자 파싱 및 상수 정의 ------------------------------------------------------------------
 const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const TITLE = path.basename(__filename);
 const argv = process.argv.slice(2);
 const platform = getPlatform();
-const args1 = argv.find(arg => [
+
+const args1 = argv.find((arg) => [
 	`--npm`,
 	`--pnpm`,
 	`--yarn`,
 	`--bun`,
 ].includes(arg))?.replace(`--`, ``) || `bun`;
-const args2 = argv.find(arg => [
+
+const args2 = argv.find((arg) => [
 	`--server`,
 	`--client`,
 ].includes(arg))?.replace(`--`, ``) || ``;
 
 // 2. 공통 설정 ------------------------------------------------------------------------------
-const getKeyPath = (pf = ``) => pf === `win` ? env.ssh.win.keyPath : env.ssh.linux.keyPath;
-const getServiceId = (pf = ``) => pf === `win` ? env.ssh.win.serviceId : env.ssh.linux.serviceId;
+const getKeyPath = (pf = ``) => (
+	pf === `win` ? env.ssh.win.keyPath : env.ssh.linux.keyPath
+);
+
+const getServiceId = (pf = ``) => (
+	pf === `win` ? env.ssh.win.serviceId : env.ssh.linux.serviceId
+);
+
 const getGcpPath = () => `gs://${env.gcp.bucket}/${env.gcp.path}`;
 const getBasePath = () => `/var/www/${env.domain}/${env.projectName}`;
 
@@ -69,6 +78,7 @@ const buildProject = () => {
 
 const compressBuild = () => {
 	const buildDir = path.join(process.cwd(), `build`);
+
 	!fileExists(buildDir) && (() => {
 		throw new Error(`build 폴더가 존재하지 않습니다: ${buildDir}`);
 	})();
@@ -79,6 +89,7 @@ const compressBuild = () => {
 const uploadToGCP = () => {
 	const gcpPath = getGcpPath();
 	const tarFile = path.join(process.cwd(), `build.tar.gz`);
+
 	!fileExists(tarFile) && (() => {
 		throw new Error(`build.tar.gz 파일이 존재하지 않습니다`);
 	})();
@@ -89,13 +100,15 @@ const uploadToGCP = () => {
 
 const deleteBuildTar = (pf = ``) => {
 	const tarFile = path.join(process.cwd(), `build.tar.gz`);
-	!fileExists(tarFile) && (
+
+	!fileExists(tarFile) ? (
 		logger(`warn`, `build.tar.gz 파일이 존재하지 않음 - 삭제 건너뜀`)
+	) : (
+		(() => {
+			const cmd = pf === `win` ? `del build.tar.gz` : `rm -rf build.tar.gz`;
+			execCommand(cmd, `build.tar.gz 삭제`);
+		})()
 	);
-	fileExists(tarFile) && (() => {
-		const cmd = pf === `win` ? `del build.tar.gz` : `rm -rf build.tar.gz`;
-		execCommand(cmd, `build.tar.gz 삭제`);
-	})();
 };
 
 const runClientRemoteScript = (pf = ``) => {
@@ -116,18 +129,21 @@ const runClientRemoteScript = (pf = ``) => {
 		`sudo chmod -R 755 ${clientPath}`,
 		`sudo systemctl restart nginx`,
 	].join(` && `);
+
 	runSshCommand(pf, commands);
 	logger(`info`, `원격 서버 클라이언트 배포 스크립트 실행 완료`);
 };
 
 // 5. Server 배포 함수 -----------------------------------------------------------------------
 const runGitPush = () => {
-	const gitScript = path.join(process.cwd(), `.node`, `git.mjs`);
+	// Fix: 현재 스크립트 위치(__dirname)를 기준으로 git.mjs 경로 탐색
+	const gitScript = path.join(__dirname, `git.mjs`);
+
 	!fileExists(gitScript) && (() => {
 		throw new Error(`git.mjs 스크립트가 존재하지 않습니다: ${gitScript}`);
 	})();
 
-	execCommand(`${args1} ${gitScript} --${args1} --push`, `git push 명령어 실행`);
+	execCommand(`${args1} ${gitScript} --${args1} --push --n`, `git push 명령어 실행`);
 };
 
 const runServerRemoteScript = (pf = ``) => {
@@ -147,12 +163,12 @@ const runServerRemoteScript = (pf = ``) => {
 		`sudo git reset --hard ${resetBranch}`,
 		`sudo rm -rf client`,
 		`sudo chmod -R 755 ${serverPath}`,
-		`if pm2 describe ${env.projectName} >/dev/null 2>&1;
-    then sudo pm2 stop ${env.projectName} && pm2 save; fi`,
+		`if pm2 describe ${env.projectName} >/dev/null 2>&1; then sudo pm2 stop ${env.projectName} && pm2 save; fi`,
 		`sudo npm install`,
 		`sudo pm2 start ecosystem.config.cjs --env production && pm2 save`,
 		`sleep 5 && sudo pm2 save --force`,
 	].join(` && `);
+
 	runSshCommand(pf, commands);
 	logger(`info`, `원격 서버 배포 스크립트 실행 완료`);
 };
@@ -184,14 +200,26 @@ void (async () => {
 		logger(`info`, `전달된 인자 1: ${args1 || `none`}`);
 		logger(`info`, `전달된 인자 2: ${args2 || `none`}`);
 		logger(`info`, `운영체제: ${platform}`);
+
+		!args2 && (() => {
+			throw new Error(`배포 대상(server/client)이 지정되지 않았습니다.`);
+		})();
 	}
-	catch {
-		logger(`warn`, `인자 파싱 오류 발생`);
-		process.exit(0);
+	catch (e) {
+		const errMsg = e instanceof Error ? e.message : String(e);
+		logger(`warn`, `초기화 오류: ${errMsg}`);
+		process.exit(1);
 	}
+
 	try {
-		args2 === `client` && runClientDeploy(platform);
-		args2 === `server` && runServerDeploy(platform);
+		args2 === `client` ? (
+			runClientDeploy(platform)
+		) : args2 === `server` ? (
+			runServerDeploy(platform)
+		) : (
+			logger(`warn`, `알 수 없는 배포 대상입니다: ${args2}`)
+		);
+
 		logger(`info`, `스크립트 정상 종료: ${TITLE}`);
 		process.exit(0);
 	}
