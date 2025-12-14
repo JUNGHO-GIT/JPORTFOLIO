@@ -1,5 +1,11 @@
-// index.ts
+/**
+ * @file index.ts
+ * @description foo
+ * @author Jungho
+ * @since 2025-12-14
+ */
 
+import "@scripts/fetch";
 import qs from "qs";
 import cors from "cors";
 import mongoose from "mongoose";
