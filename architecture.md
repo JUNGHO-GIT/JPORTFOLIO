@@ -163,7 +163,6 @@ JPORTFOLIO/
 |-------------------|----------------------------------|
 | useCommonValue    | 공통 값 (URL, API prefix 등)     |
 | useResponsive     | 반응형 브레이크포인트            |
-| useFocusedAxis    | 스크롤 축 포커스                 |
 | useScrollTop      | 스크롤 위치 관리                 |
 | useStorageLocal   | LocalStorage 관리               |
 | useStorageSession | SessionStorage 관리             |

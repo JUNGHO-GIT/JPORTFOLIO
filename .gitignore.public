@@ -172,10 +172,6 @@
 **/merge.cjs.*
 **/merge.sh
 **/merge.sh.*
-**/*.vsix
-**/*.vsix.*
-**/*.vsix
-**/*.vsix.*
 **/bun.lock
 **/bun.lock.*
 **/pnpm-lock.yaml

@@ -1,4 +1,9 @@
-// index.tsx
+/**
+ * @file index.tsx
+ * @description foo
+ * @author Jungho
+ * @since 2025-12-27
+ */
 
 import "swiper/css";
 import 'swiper/css/pagination';
@@ -8,68 +13,69 @@ import "@assets/styles/Mui.css";
 import '@assets/styles/Components.css';
 
 import {
-  BrowserRouter, Routes, Route, createRoot, useEffect, memo
+	BrowserRouter, Routes, Route, createRoot, useEffect, memo
 } from '@exportReacts';
 
 import {
-  CssBaseline, ThemeProvider, createTheme
+	CssBaseline, ThemeProvider, createTheme
 } from '@exportMuis';
 
 import {
-  useStoreLoading
+	useStoreLoading
 } from '@exportStores';
 
 import {
-  Loader, Footer, Toggle
+	Loader, Footer, Toggle
 } from '@exportLayouts';
 
 import {
-  Main, Project1, Project2, Project3, Project4, Project5, Project6, Project7, Project8
+	Main, Project1, Project2, Project3, Project4, Project5, Project6, Project7, Project8
 } from '@exportPages';
 
 // -------------------------------------------------------------------------------------------------
 const App = memo(() => {
 
-  const { setLOADING } = useStoreLoading();
+	const { setLOADING } = useStoreLoading();
 
-  useEffect(() => {
-    setLOADING(true);
-    setTimeout(() => {
-      setLOADING(false);
-    }, 500);
-  }, []);
+	useEffect(() => {
+		setLOADING(true);
+		setTimeout(() => {
+			setLOADING(false);
+		}, 500);
+	}, []);
 
-  return (
-    <div className={"App"}>
-      <Loader />
-      <Routes>
-        <Route path={"/*"} element={<Main />} />
-        <Route path={"/projects/project1/*"} element={<Project1 />} />
-        <Route path={"/projects/project2/*"} element={<Project2 />} />
-        <Route path={"/projects/project3/*"} element={<Project3 />} />
-        <Route path={"/projects/project4/*"} element={<Project4 />} />
-        <Route path={"/projects/project5/*"} element={<Project5 />} />
-        <Route path={"/projects/project6/*"} element={<Project6 />} />
-        <Route path={"/projects/project7/*"} element={<Project7 />} />
-        <Route path={"/projects/project8/*"} element={<Project8 />} />
-      </Routes>
-      <Toggle />
-      <Footer />
-    </div>
-  );
+	return (
+		<div className={`App`}>
+			<Loader />
+			<Routes>
+				<Route path={`/*`} element={<Main />} />
+				<Route path={`/projects/project1/*`} element={<Project1 />} />
+				<Route path={`/projects/project2/*`} element={<Project2 />} />
+				<Route path={`/projects/project3/*`} element={<Project3 />} />
+				<Route path={`/projects/project4/*`} element={<Project4 />} />
+				<Route path={`/projects/project5/*`} element={<Project5 />} />
+				<Route path={`/projects/project6/*`} element={<Project6 />} />
+				<Route path={`/projects/project7/*`} element={<Project7 />} />
+				<Route path={`/projects/project8/*`} element={<Project8 />} />
+			</Routes>
+			<Toggle />
+			<Footer />
+		</div>
+	);
 });
 
 // -------------------------------------------------------------------------------------------------
-const fontFamily = "'Pretendard Variable', Pretendard, FontAwesome, -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', sans-serif";
+const fontFamily = `'Pretendard Variable', Pretendard, FontAwesome, -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji', sans-serif`;
 
 // -------------------------------------------------------------------------------------------------
-createRoot(document.getElementById('root') as HTMLElement).render(
-  <BrowserRouter basename={"/JPORTFOLIO"}>
-    <ThemeProvider theme={
-      createTheme({ typography:{ fontFamily: fontFamily } })
-    }>
-      <CssBaseline />
-      <App />
-    </ThemeProvider>
-  </BrowserRouter>
+createRoot(document.querySelector(`#root`) as HTMLElement).render(
+	<BrowserRouter basename={`/JPORTFOLIO`}>
+		<ThemeProvider theme={
+			createTheme({ typography: { fontFamily: fontFamily } })
+		}
+		>
+			<CssBaseline />
+			<App />
+		</ThemeProvider>
+	</BrowserRouter>
 );

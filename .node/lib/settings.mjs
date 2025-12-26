@@ -87,7 +87,6 @@ export const settings = {
 				targetPath: `client`,
 				files: [
 					`.client.swcrc`,
-					`eslint.config.mjs`,
 					`tsconfig.default.json`,
 				],
 			},

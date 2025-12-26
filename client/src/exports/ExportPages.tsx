@@ -1,4 +1,9 @@
-// ExportPages.tsx
+/**
+ * @file ExportPages.tsx
+ * @description foo
+ * @author Jungho
+ * @since 2025-12-27
+ */
 
 // -------------------------------------------------------------------------------------------------
 export { Main } from "@pages/Main";

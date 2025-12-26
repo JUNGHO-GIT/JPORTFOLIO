@@ -35,18 +35,56 @@ const args3 = argv.find((arg) => [
 	`--n`,
 ].includes(arg))?.replace(`--`, ``) || ``;
 
+// 0. git 브랜치/리모트 헬퍼 -----------------------------------------------------------------
+const getRemoteSettings = (remoteName = ``) => (
+	remoteName === settings.git.remotes.public.name ? settings.git.remotes.public
+		: remoteName === settings.git.remotes.private.name ? settings.git.remotes.private
+			: null
+);
+
+const getBranchName = (remoteName = ``) => {
+	const remote = getRemoteSettings(remoteName);
+	const ref = remote?.branch ?? ``;
+	return ref || null;
+};
+
+const hasLocalBranch = (branch = ``) => {
+	try {
+		!branch && (() => {
+			throw new Error(`branch is empty`);
+		})();
+		execSync(`git show-ref --verify --quiet refs/heads/${branch}`, { stdio: `pipe` });
+		return true;
+	}
+	catch {
+		return false;
+	}
+};
+
+const ensureLocalBranchFromRemote = (branch = ``, remoteName = ``) => {
+	const ok = branch && remoteName && checkRemoteExists(remoteName) && (() => {
+		try {
+			execSync(`git fetch ${remoteName} --prune`, { stdio: `pipe` });
+			execSync(`git checkout -B ${branch} ${remoteName}/${branch}`, { stdio: `pipe` });
+			return true;
+		}
+		catch {
+			return false;
+		}
+	})();
+	return ok ?? false;
+};
+
 // 2. 원격 기본브랜치 감지 -------------------------------------------------------------------
 const getRemoteDefaultBranch = (remoteName = ``) => {
 	try {
 		logger(`info`, `원격 저장소 ${remoteName} 기본브랜치 감지 시작`);
-		const branch = remoteName === settings.git.remotes.public.name ? settings.git.remotes.public.branch : remoteName === settings.git.remotes.private.name ? settings.git.remotes.private.branch : null;
-
-		branch ? logger(`info`, `원격 저장소 ${remoteName} 기본브랜치 (고정): ${branch}`) : logger(`error`, `지원하지 않는 remote입니다: ${remoteName}`);
-
+		const branch = getBranchName(remoteName);
+		branch ? logger(`info`, `원격 저장소 ${remoteName} 기본브랜치 (고정): ${branch}`) : logger(`warn`, `지원하지 않는 remote이거나 branch 설정이 비었습니다: ${remoteName}`);
 		return branch;
 	}
 	catch {
-		logger(`error`, `원격 저장소 ${remoteName} 기본브랜치 감지 실패`);
+		logger(`warn`, `원격 저장소 ${remoteName} 기본브랜치 감지 실패`);
 		return null;
 	}
 };
@@ -67,58 +105,78 @@ const checkRemoteExists = (remoteName = ``) => {
 	}
 };
 
-// 4. 원격 기본브랜치 설정 -------------------------------------------------------------------
+// 4. 원격 브랜치 존재 확인 ------------------------------------------------------------------
+const checkRemoteBranchExists = (remoteName = ``, branchName = ``) => {
+	try {
+		execSync(`git ls-remote --exit-code --heads ${remoteName} ${branchName}`, { stdio: `pipe` });
+		return true;
+	}
+	catch {
+		return false;
+	}
+};
+
+// 5. 원격 기본브랜치 설정 -------------------------------------------------------------------
 const setRemoteDefaultBranch = (remoteName = ``) => {
 	const remoteExists = checkRemoteExists(remoteName);
 	!remoteExists && logger(`info`, `Remote '${remoteName}' 존재하지 않음 - 기본브랜치 설정 건너뜀`);
 	remoteExists && (() => {
 		const targetBranch = getRemoteDefaultBranch(remoteName);
-		!targetBranch && (() => {
-			logger(`error`, `원격 기본브랜치를 찾을 수 없습니다: ${remoteName}`);
-			process.exit(1);
-		})();
+		const canSet = Boolean(targetBranch);
+		!canSet && logger(`warn`, `원격 기본브랜치를 찾을 수 없습니다: ${remoteName} - 기본브랜치 설정 스킵`);
+		canSet && (() => {
+			// 원격에 타겟 브랜치가 존재하는지 확인
+			const branchExists = checkRemoteBranchExists(remoteName, targetBranch);
+			!branchExists && logger(`info`, `원격 브랜치 '${targetBranch}'가 아직 없음 - push 후 설정 필요`);
+			branchExists && (() => {
+				try {
+					const remoteUrl = execSync(`git remote get-url ${remoteName}`, { encoding: `utf8` }).trim();
+					const match = remoteUrl.match(/github\.com[/:]([^/]+)\/([^./]+)/);
+					!match && logger(`warn`, `GitHub URL 파싱 실패: ${remoteUrl}`);
 
-		try {
-			const remoteUrl = execSync(`git remote get-url ${remoteName}`, { encoding: `utf8` }).trim();
-			const match = remoteUrl.match(/github\.com[/:]([^/]+)\/([^./]+)/);
-			!match && logger(`warn`, `GitHub URL 파싱 실패: ${remoteUrl}`);
-
-			match && (() => {
-				const [
-					, owner, repo,
-				] = match;
-				logger(`info`, `GitHub default branch 변경 시도: ${owner}/${repo} → ${targetBranch}`);
-				execSync(`gh api repos/${owner}/${repo} -X PATCH -f default_branch=${targetBranch}`, { stdio: `pipe` });
-				logger(`success`, `GitHub default branch 변경 완료: ${targetBranch}`);
-				targetBranch !== `main` && (() => {
-					try {
-						execSync(`git push ${remoteName} --delete main`, { stdio: `pipe` });
-						logger(`success`, `원격 'main' 브랜치 삭제 완료: ${remoteName}`);
-					}
-					catch {
-						logger(`info`, `원격 'main' 브랜치 없음 또는 이미 삭제됨: ${remoteName}`);
-					}
-				})();
+					match && (() => {
+						const owner = match[1];
+						const repo = match[2];
+						logger(`info`, `GitHub default branch 변경 시도: ${owner}/${repo} → ${targetBranch}`);
+						execSync(`gh api repos/${owner}/${repo} -X PATCH -f default_branch=${targetBranch}`, { stdio: `pipe` });
+						logger(`success`, `GitHub default branch 변경 완료: ${targetBranch}`);
+						// main 브랜치 삭제 (targetBranch가 main이 아닌 경우)
+						!targetBranch.endsWith(`main`) && (() => {
+							try {
+								execSync(`git push ${remoteName} --delete main`, { stdio: `pipe` });
+								logger(`success`, `원격 'main' 브랜치 삭제 완료: ${remoteName}`);
+							}
+							catch {
+								logger(`info`, `원격 'main' 브랜치 없음 또는 이미 삭제됨: ${remoteName}`);
+							}
+						})();
+					})();
+				}
+				catch (error) {
+					logger(`warn`, `GitHub default branch 설정 실패 (gh CLI 필요): ${error instanceof Error ? error.message : String(error)}`);
+				}
 			})();
-		}
-		catch (error) {
-			logger(`warn`, `GitHub default branch 설정 실패 (gh CLI 필요): ${error instanceof Error ? error.message : String(error)}`);
-		}
+		})();
 	})();
 };
 
-// 5. 불필요한 브랜치 삭제 (로컬 + 원격) ------------------------------------------------------
+// 6. 불필요한 브랜치 삭제 (로컬 + 원격) ------------------------------------------------------
 const cleanupBranches = () => {
 	logger(`info`, `불필요한 브랜치 정리 시작`);
-	const localDefaultBranches = [settings.git.remotes.public.branch, settings.git.remotes.private.branch].filter(Boolean);
+	const localDefaultBranches = [
+		getBranchName(settings.git.remotes.public.name),
+		getBranchName(settings.git.remotes.private.name),
+	].filter(Boolean);
 	const uniqueDefaults = [...new Set(localDefaultBranches)];
+	uniqueDefaults.length === 0 && logger(`warn`, `기본브랜치 설정을 찾을 수 없습니다 - 브랜치 정리 스킵`);
+	uniqueDefaults.length === 0 && (() => {})();
 
 	// 5-1. 로컬 브랜치 정리
 	(() => {
 		const localBranches = execSync(`git branch --list`, { encoding: `utf8` })
-			.split(/\r?\n/)
-			.map((b) => b.replace(/^\*?\s*/, ``).trim())
-			.filter(Boolean);
+		.split(/\r?\n/)
+		.map((b) => b.replace(/^\*?\s*/, ``).trim())
+		.filter(Boolean);
 
 		const localToDelete = localBranches.filter((b) => !uniqueDefaults.includes(b));
 		localToDelete.length === 0 && logger(`info`, `삭제할 로컬 브랜치 없음`);
@@ -127,12 +185,30 @@ const cleanupBranches = () => {
 			logger(`info`, `삭제 대상 로컬 브랜치: ${localToDelete.join(`, `)}`);
 			const currentBranch = execSync(`git branch --show-current`, { encoding: `utf8` }).trim();
 			!uniqueDefaults.includes(currentBranch) && (() => {
-				const switchTo = uniqueDefaults[0];
-				logger(`info`, `현재 브랜치 '${currentBranch}'가 삭제 대상 - '${switchTo}'로 전환`);
-				execSync(`git checkout ${switchTo}`, { stdio: `inherit` });
+				const switchTo = String(uniqueDefaults[0] || ``);
+				const canSwitch = Boolean(switchTo);
+				!canSwitch && logger(`warn`, `전환할 기본브랜치가 비었습니다 - 현재 브랜치 삭제 제외`);
+				canSwitch && (() => {
+					logger(`info`, `현재 브랜치 '${currentBranch}'가 삭제 대상 - '${switchTo}'로 전환 시도`);
+					hasLocalBranch(switchTo) ? (() => {
+						try {
+							execSync(`git checkout ${switchTo}`, { stdio: `inherit` });
+						}
+						catch {
+							logger(`warn`, `브랜치 전환 실패: ${switchTo}`);
+						}
+					})() : (() => {
+						const created = ensureLocalBranchFromRemote(switchTo, settings.git.remotes.private.name) || ensureLocalBranchFromRemote(switchTo, settings.git.remotes.public.name);
+						created ? logger(`info`, `로컬 기본브랜치 생성/전환 완료: ${switchTo}`) : logger(`warn`, `로컬 기본브랜치 생성/전환 실패: ${switchTo} - 현재 브랜치 삭제 제외`);
+					})();
+				})();
 			})();
 
-			localToDelete.forEach((branch) => {
+			const afterBranch = execSync(`git branch --show-current`, { encoding: `utf8` }).trim();
+			const safeDeleteList = localToDelete.filter((b) => b !== afterBranch);
+			safeDeleteList.length !== localToDelete.length && logger(`info`, `현재 브랜치는 삭제에서 제외: ${afterBranch}`);
+
+			safeDeleteList.forEach((branch) => {
 				try {
 					execSync(`git branch -D ${branch}`, { stdio: `pipe` });
 					logger(`success`, `로컬 브랜치 삭제 완료: ${branch}`);
@@ -151,37 +227,86 @@ const cleanupBranches = () => {
 
 		remoteExists && (() => {
 			const targetBranch = getRemoteDefaultBranch(remoteName);
-			try {
-				execSync(`git fetch ${remoteName} --prune`, { stdio: `pipe` });
-			}
-			catch {
-				logger(`warn`, `${remoteName} fetch 실패`);
-			}
-			const remoteBranches = execSync(`git branch -r --list "${remoteName}/*"`, { encoding: `utf8` })
+			const canCleanupRemote = Boolean(targetBranch);
+			!canCleanupRemote && logger(`warn`, `원격 기본브랜치 설정 없음 - 원격 브랜치 정리 스킵: ${remoteName}`);
+			canCleanupRemote && (() => {
+				try {
+					execSync(`git fetch ${remoteName} --prune`, { stdio: `pipe` });
+				}
+				catch {
+					logger(`warn`, `${remoteName} fetch 실패`);
+				}
+				const remoteBranches = execSync(`git branch -r --list "${remoteName}/*"`, { encoding: `utf8` })
 				.split(/\r?\n/)
 				.map((b) => b.trim())
 				.filter((b) => b && !b.includes(`HEAD`))
 				.map((b) => b.replace(`${remoteName}/`, ``));
-			const remoteToDelete = remoteBranches.filter((b) => b !== targetBranch);
-			remoteToDelete.length === 0 && logger(`info`, `삭제할 원격 브랜치 없음: ${remoteName}`);
-			remoteToDelete.length > 0 && (() => {
-				logger(`info`, `삭제 대상 원격 브랜치 (${remoteName}): ${remoteToDelete.join(`, `)}`);
-				remoteToDelete.forEach((branch) => {
-					try {
-						execSync(`git push ${remoteName} --delete ${branch}`, { stdio: `pipe` });
-						logger(`success`, `원격 브랜치 삭제 완료: ${remoteName}/${branch}`);
-					}
-					catch (error) {
-						logger(`warn`, `원격 브랜치 삭제 실패: ${remoteName}/${branch} - ${error instanceof Error ? error.message : String(error)}`);
-					}
-				});
+				const remoteToDelete = remoteBranches.filter((b) => b !== targetBranch);
+				remoteToDelete.length === 0 && logger(`info`, `삭제할 원격 브랜치 없음: ${remoteName}`);
+				remoteToDelete.length > 0 && (() => {
+					logger(`info`, `삭제 대상 원격 브랜치 (${remoteName}): ${remoteToDelete.join(`, `)}`);
+					remoteToDelete.forEach((branch) => {
+						try {
+							execSync(`git push ${remoteName} --delete ${branch}`, { stdio: `pipe` });
+							logger(`success`, `원격 브랜치 삭제 완료: ${remoteName}/${branch}`);
+						}
+						catch (error) {
+							logger(`warn`, `원격 브랜치 삭제 실패: ${remoteName}/${branch} - ${error instanceof Error ? error.message : String(error)}`);
+						}
+					});
+				})();
 			})();
 		})();
 	});
 	logger(`success`, `브랜치 정리 완료`);
 };
 
-// 6. git cache 초기화 -----------------------------------------------------------------------
+// 7. git lfs 강제 설정 ----------------------------------------------------------------------
+const ensureGitLfs = () => {
+	logger(`info`, `Git LFS 강제 설정 시작`);
+	try {
+		execSync(`git lfs install --force`, { stdio: `pipe` });
+		logger(`success`, `Git LFS 설치/초기화 완료`);
+
+		// .gitattributes 파일 확인 및 LFS 추적 패턴 설정
+		const gitattributesPath = `.gitattributes`;
+		const lfsPatterns = [
+			`*.zip filter=lfs diff=lfs merge=lfs -text`,
+			`*.tar.gz filter=lfs diff=lfs merge=lfs -text`,
+			`*.7z filter=lfs diff=lfs merge=lfs -text`,
+			`*.rar filter=lfs diff=lfs merge=lfs -text`,
+			`*.png filter=lfs diff=lfs merge=lfs -text`,
+			`*.jpg filter=lfs diff=lfs merge=lfs -text`,
+			`*.jpeg filter=lfs diff=lfs merge=lfs -text`,
+			`*.gif filter=lfs diff=lfs merge=lfs -text`,
+			`*.mp4 filter=lfs diff=lfs merge=lfs -text`,
+			`*.mp3 filter=lfs diff=lfs merge=lfs -text`,
+			`*.pdf filter=lfs diff=lfs merge=lfs -text`,
+			`*.psd filter=lfs diff=lfs merge=lfs -text`,
+			`*.ai filter=lfs diff=lfs merge=lfs -text`,
+			`*.vsix filter=lfs diff=lfs merge=lfs -text`,
+		];
+
+		const existingContent = fileExists(gitattributesPath) ? fs.readFileSync(gitattributesPath, `utf8`) : ``;
+		const existingLines = new Set(existingContent.split(/\r?\n/).map((l) => l.trim()).filter(Boolean));
+		const missingPatterns = lfsPatterns.filter((p) => !existingLines.has(p));
+
+		missingPatterns.length > 0 ? (() => {
+			const newContent = existingContent.trim() + (existingContent.trim() ? os.EOL : ``) + missingPatterns.join(os.EOL) + os.EOL;
+			fs.writeFileSync(gitattributesPath, newContent, `utf8`);
+			logger(`success`, `.gitattributes LFS 패턴 추가 완료: ${missingPatterns.length}개`);
+		})() : logger(`info`, `.gitattributes LFS 패턴 이미 설정됨`);
+
+		// LFS 추적 상태 확인
+		const trackedFiles = execSync(`git lfs ls-files`, { encoding: `utf8` }).trim();
+		trackedFiles ? logger(`info`, `LFS 추적 파일 존재: ${trackedFiles.split(/\r?\n/).length}개`) : logger(`info`, `LFS 추적 파일 없음`);
+	}
+	catch (error) {
+		logger(`warn`, `Git LFS 설정 실패: ${error instanceof Error ? error.message : String(error)}`);
+	}
+};
+
+// 8. git cache 초기화 -----------------------------------------------------------------------
 const clearGitCache = () => {
 	logger(`info`, `Git 캐시 초기화 시작`);
 	try {
@@ -194,7 +319,11 @@ const clearGitCache = () => {
 	}
 };
 
-// 7. 파일 라인 변환 헬퍼 --------------------------------------------------------------------
+// 9. 파일 라인 변환 헬퍼 --------------------------------------------------------------------
+/**
+ * @param {string} content
+ * @param {Array<{ match: (line: string) => boolean, replace: (line: string) => string }>} rules
+ */
 const transformLines = (content = ``, rules = []) => {
 	const lines = content.split(/\r?\n/);
 	const transformed = lines.map((line) => {
@@ -205,7 +334,7 @@ const transformLines = (content = ``, rules = []) => {
 	return transformed.join(os.EOL);
 };
 
-// 8. env 파일 및 index 파일 수정 ------------------------------------------------------------
+// 10. env 파일 및 index 파일 수정 -----------------------------------------------------------
 const modifyEnvAndIndex = () => {
 	const envExists = fileExists(`.env`);
 	const indexExists = fileExists(`index.ts`);
@@ -245,7 +374,7 @@ const modifyEnvAndIndex = () => {
 	})();
 };
 
-// 9. env 파일 및 index 파일 복원 ------------------------------------------------------------
+// 11. env 파일 및 index 파일 복원 -----------------------------------------------------------
 const restoreEnvAndIndex = () => {
 	const envExists = fileExists(`.env`);
 	const indexExists = fileExists(`index.ts`);
@@ -285,7 +414,7 @@ const restoreEnvAndIndex = () => {
 	})();
 };
 
-// 10. changelog 수정 ------------------------------------------------------------------------
+// 12. changelog 수정 ------------------------------------------------------------------------
 const modifyChangelog = (msg = ``) => {
 	const changelogExists = fileExists(`changelog.md`);
 	!changelogExists && logger(`info`, `changelog.md 파일 없음 - 건너뜀`);
@@ -294,7 +423,8 @@ const modifyChangelog = (msg = ``) => {
 		logger(`info`, `changelog.md 업데이트 시작`);
 		const changelog = fs.readFileSync(`changelog.md`, `utf8`);
 		const matches = [...changelog.matchAll(/(\s*)(\d+\.\d+\.\d+)(\s*)/g)];
-		const lastVersion = matches.at(-1)[2];
+		const last = matches.at(-1);
+		const lastVersion = last?.[2] ?? `0.0.0`;
 		const ver = lastVersion.split(`.`).map(Number);
 		ver[2]++;
 		ver[2] >= 10 && (() => {
@@ -321,9 +451,9 @@ const modifyChangelog = (msg = ``) => {
 				hour12: false,
 			});
 			const formatted = `- ${dateStr} (${timeStr})`
-				.replaceAll(/(\.\s*\()/g, ` (`)
-				.replaceAll(/(\.\s*)/g, `-`)
-				.replaceAll(/\((\W*)(\s*)/g, `(`);
+			.replaceAll(/(\.\s*\()/g, ` (`)
+			.replaceAll(/(\.\s*)/g, `-`)
+			.replaceAll(/\((\W*)(\s*)/g, `(`);
 			return formatted;
 		})();
 
@@ -337,7 +467,7 @@ const modifyChangelog = (msg = ``) => {
 	return result;
 };
 
-// 11. package.json 버전 수정 ----------------------------------------------------------------
+// 13. package.json 버전 수정 ----------------------------------------------------------------
 const incrementVersion = (newVersion = ``) => {
 	const pkgPath = `package.json`;
 	const pkgExists = fileExists(pkgPath);
@@ -352,31 +482,30 @@ const incrementVersion = (newVersion = ``) => {
 	})();
 };
 
-// 12. git fetch -----------------------------------------------------------------------------
+// 14. git fetch -----------------------------------------------------------------------------
 const gitFetch = () => {
 	try {
 		const privateExists = checkRemoteExists(settings.git.remotes.private.name);
 		const publicExists = checkRemoteExists(settings.git.remotes.public.name);
 		privateExists ? logger(`info`, `Private remote 감지 - ${settings.git.remotes.private.name}만 fetch 진행`) : logger(`info`, `Private remote 없음 - ${settings.git.remotes.public.name} fetch 진행`);
 
-		const targetRemote = privateExists ? settings.git.remotes.private.name : settings.git.remotes.public.name;
-		const targetBranch = getRemoteDefaultBranch(targetRemote);
-		!privateExists && !publicExists && (() => {
-			logger(`error`, `사용 가능한 remote가 없습니다`);
-			process.exit(1);
-		})();
-		!targetBranch && (() => {
-			logger(`error`, `원격 기본브랜치를 찾을 수 없습니다`);
-			process.exit(1);
-		})();
+		const canUseRemote = privateExists || publicExists;
+		!canUseRemote && logger(`warn`, `사용 가능한 remote가 없습니다 - fetch/reset 스킵`);
+		const targetRemote = canUseRemote ? (privateExists ? settings.git.remotes.private.name : settings.git.remotes.public.name) : ``;
+		const targetBranch = targetRemote ? getRemoteDefaultBranch(targetRemote) : null;
+		const canFetch = Boolean(targetRemote && targetBranch);
+		canUseRemote && !canFetch && logger(`warn`, `원격 기본브랜치를 찾을 수 없습니다 - fetch/reset 스킵`);
 
-		logger(`info`, `Git Fetch 시작: ${targetRemote}`);
-		execSync(`git fetch ${targetRemote}`, { stdio: `inherit` });
-		logger(`success`, `Git Fetch 완료: ${targetRemote}`);
+		canFetch && (() => {
+			const fullRef = `${targetRemote}/${targetBranch}`;
+			logger(`info`, `Git Fetch 시작: ${targetRemote}`);
+			execSync(`git fetch ${targetRemote}`, { stdio: `inherit` });
+			logger(`success`, `Git Fetch 완료: ${targetRemote}`);
 
-		logger(`info`, `Git Reset Hard 시작: ${targetRemote}/${targetBranch}`);
-		execSync(`git reset --hard ${targetRemote}/${targetBranch}`, { stdio: `inherit` });
-		logger(`success`, `Git Reset Hard 완료: ${targetRemote}/${targetBranch}`);
+			logger(`info`, `Git Reset Hard 시작: ${fullRef}`);
+			execSync(`git reset --hard ${fullRef}`, { stdio: `inherit` });
+			logger(`success`, `Git Reset Hard 완료: ${fullRef}`);
+		})();
 	}
 	catch (error) {
 		logger(`error`, `Git Fetch/Reset 실패: ${error instanceof Error ? error.message : String(error)}`);
@@ -384,59 +513,60 @@ const gitFetch = () => {
 	}
 };
 
-// 13. git push 공통 함수 --------------------------------------------------------------------
+// 15. git push 공통 함수 --------------------------------------------------------------------
 const gitPush = (remoteName = ``, ignoreFilePath = ``, msg = ``) => {
 	const remoteExists = checkRemoteExists(remoteName);
 	!remoteExists && logger(`info`, `Remote '${remoteName}' 존재하지 않음 - 건너뜀`);
 
 	remoteExists && (() => {
 		const targetBranch = getRemoteDefaultBranch(remoteName);
-		!targetBranch && (() => {
-			logger(`error`, `원격 기본브랜치를 찾을 수 없습니다: ${remoteName}`);
-			process.exit(1);
-		})();
+		const canPush = Boolean(targetBranch);
+		!canPush && logger(`warn`, `원격 기본브랜치를 찾을 수 없습니다: ${remoteName} - push 스킵`);
+		canPush && (() => {
+			const fullRef = `${remoteName}/${targetBranch}`;
+			logger(`info`, `Git Push 시작: ${remoteName} (${fullRef})`);
 
-		logger(`info`, `Git Push 시작: ${remoteName}`);
+			const ignorePublicFile = fs.readFileSync(`.gitignore.public`, `utf8`);
+			const ignoreContent = fs.readFileSync(ignoreFilePath, `utf8`);
 
-		const ignorePublicFile = fs.readFileSync(`.gitignore.public`, `utf8`);
-		const ignoreContent = fs.readFileSync(ignoreFilePath, `utf8`);
+			logger(`info`, `.gitignore 파일 수정 적용: ${ignoreFilePath}`);
+			fs.writeFileSync(`.gitignore`, ignoreContent, `utf8`);
+			clearGitCache();
+			execSync(`git add .`, { stdio: `inherit` });
 
-		logger(`info`, `.gitignore 파일 수정 적용: ${ignoreFilePath}`);
-		fs.writeFileSync(`.gitignore`, ignoreContent, `utf8`);
-		clearGitCache();
-		execSync(`git add .`, { stdio: `inherit` });
-
-		const statusOutput = execSync(`git status --porcelain`, { encoding: `utf8` }).trim();
-		statusOutput && (() => {
-			logger(`info`, `변경사항 감지 - 커밋 진행`);
-			const tempFile = `.git-commit-msg.tmp`;
-			const commitContent = msg || (() => {
-				const now = new Date();
-				const dateStr = now.toISOString().slice(0, 10);
-				const timeStr = now.toTimeString().slice(0, 8);
-				return `${dateStr} ${timeStr}`;
+			const statusOutput = execSync(`git status --porcelain`, { encoding: `utf8` }).trim();
+			statusOutput && (() => {
+				logger(`info`, `변경사항 감지 - 커밋 진행`);
+				const tempFile = `.git-commit-msg.tmp`;
+				const commitContent = msg || (() => {
+					const now = new Date();
+					const dateStr = now.toISOString().slice(0, 10);
+					const timeStr = now.toTimeString().slice(0, 8);
+					return `${dateStr} ${timeStr}`;
+				})();
+				fs.writeFileSync(tempFile, commitContent, `utf8`);
+				execSync(`git commit -F "${tempFile}"`, { stdio: `inherit` });
+				fs.unlinkSync(tempFile);
+				logger(`success`, `커밋 완료`);
 			})();
-			fs.writeFileSync(tempFile, commitContent, `utf8`);
-			execSync(`git commit -F "${tempFile}"`, { stdio: `inherit` });
-			fs.unlinkSync(tempFile);
-			logger(`success`, `커밋 완료`);
+			!statusOutput && logger(`info`, `변경사항 없음 - 커밋 건너뜀`);
+
+			logger(`info`, `Push 진행: ${fullRef}`);
+			execSync(`git push --force ${remoteName} HEAD:${targetBranch}`, { stdio: `inherit` });
+			logger(`success`, `Push 완료: ${fullRef}`);
+
+			fs.writeFileSync(`.gitignore`, ignorePublicFile, `utf8`);
+			logger(`info`, `.gitignore 파일 복원`);
 		})();
-		!statusOutput && logger(`info`, `변경사항 없음 - 커밋 건너뜀`);
-
-		logger(`info`, `Push 진행: ${remoteName} ${targetBranch}`);
-		execSync(`git push --force ${remoteName} HEAD:${targetBranch}`, { stdio: `inherit` });
-		logger(`success`, `Push 완료: ${remoteName} ${targetBranch}`);
-
-		fs.writeFileSync(`.gitignore`, ignorePublicFile, `utf8`);
-		logger(`info`, `.gitignore 파일 복원`);
 	})();
 };
 
-// 14. Push 프로세스 실행 --------------------------------------------------------------------
+// 16. Push 프로세스 실행 --------------------------------------------------------------------
 const runPushProcess = async () => {
 	const commitMsg = args3.includes(`n`) ? `` : await runPrompt(`커밋 메시지 입력 (빈값 = 날짜/시간): `);
 	logger(`info`, `커밋 메시지: ${commitMsg || `auto (date/time)`}`);
 
+	ensureGitLfs();
 	modifyEnvAndIndex();
 	incrementVersion(modifyChangelog(commitMsg));
 	gitPush(settings.git.remotes.public.name, `.gitignore.public`, commitMsg);
@@ -459,17 +589,19 @@ const runPushProcess = async () => {
 	}
 	try {
 		args2 === `fetch` && (() => {
+			ensureGitLfs();
 			setRemoteDefaultBranch(settings.git.remotes.public.name);
 			setRemoteDefaultBranch(settings.git.remotes.private.name);
 			cleanupBranches();
 			gitFetch();
 		})();
-		args2 === `push` && (async () => {
+		args2 === `push` && (await (async () => {
+			await runPushProcess();
+			// push 후 원격 브랜치가 생성된 상태에서 기본 브랜치 설정
 			setRemoteDefaultBranch(settings.git.remotes.public.name);
 			setRemoteDefaultBranch(settings.git.remotes.private.name);
 			cleanupBranches();
-			await runPushProcess();
-		})();
+		})());
 		logger(`info`, `스크립트 정상 종료: ${TITLE}`);
 		process.exit(0);
 	}

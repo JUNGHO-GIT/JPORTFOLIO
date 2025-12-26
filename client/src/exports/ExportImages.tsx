@@ -1,4 +1,9 @@
-// importImages.jsx
+/**
+ * @file ExportImages.tsx
+ * @description foo
+ * @author Jungho
+ * @since 2025-12-27
+ */
 
 // main
 export { default as logo } from "@assets/images/main/logo.png";

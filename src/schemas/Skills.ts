@@ -1,4 +1,9 @@
-// Skills.ts
+/**
+ * @file Skills.ts
+ * @description foo
+ * @author Jungho
+ * @since 2025-12-27
+ */
 
 import mongoose from "mongoose";
 import { incrementSeq } from "@schemas/Counter";
@@ -23,31 +28,31 @@ const schema = new mongoose.Schema(
 
 		skills_title: {
 			type: String,
-			default: "",
+			default: ``,
 			required: false
 		},
 		skills_section: [
 			{
 				skills_section_img: {
 					type: String,
-					default: "",
+					default: ``,
 					required: false
 				},
 				skills_section_value: {
 					type: String,
-					default: "",
+					default: ``,
 					required: false
 				},
 				skills_section_sub: [
 					{
 						skills_section_sub_icon: {
 							type: String,
-							default: "",
+							default: ``,
 							required: false
 						},
 						skills_section_sub_value: {
 							type: String,
-							default: "",
+							default: ``,
 							required: false
 						}
 					}
@@ -67,20 +72,20 @@ const schema = new mongoose.Schema(
 		}
 	},
 	{
-		collection: "Skills",
+		collection: `Skills`,
 		timestamps: {
-			createdAt: "skills_regDt",
-			updatedAt: "skills_updateDt"
+			createdAt: `skills_regDt`,
+			updatedAt: `skills_updateDt`
 		},
 	}
 );
 
 // 3. counter --------------------------------------------------------------------------------------
-schema.pre<SkillsType>("save", async function () {
+schema.pre<SkillsType>(`save`, async function() {
 	if (this.isNew) {
-		this.skills_number = await incrementSeq("skills_number", "Skills");
+		this.skills_number = await incrementSeq(`skills_number`, `Skills`);
 	}
 });
 
 // 5. model ----------------------------------------------------------------------------------------
-export const Skills = mongoose.model<SkillsType>("Skills", schema);
+export const Skills = mongoose.model<SkillsType>(`Skills`, schema);
