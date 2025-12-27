@@ -34,7 +34,7 @@ const args2 = argv.find((arg) => [
 const getKeyPath = (pf = ``) => (pf === `win` ? env.ssh.win.keyPath : env.ssh.linux.keyPath);
 const getServiceId = (pf = ``) => (pf === `win` ? env.ssh.win.serviceId : env.ssh.linux.serviceId);
 const getGcpPath = () => `gs://${env.gcp.bucket}/${env.gcp.path}`;
-const getBasePath = () => `/var/www/${env.domain}/${env.projectName}`;
+const getBasePath = () => `${env.basePath}/${env.domain}/${env.projectName}`;
 
 // 3. SSH 명령 실행 --------------------------------------------------------------------------
 const runSshCommand = (pf = ``, commands = ``) => {
@@ -92,10 +92,10 @@ const uploadToGCP = () => {
 const deleteBuildTar = (pf = ``) => {
 	const tarFile = path.join(process.cwd(), `build.tar.gz`);
 
-	!fileExists(tarFile) ? logger(`warn`, `build.tar.gz 파일이 존재하지 않음 - 삭제 건너뜀`) : (() => {
-		const cmd = pf === `win` ? `del build.tar.gz` : `rm -rf build.tar.gz`;
-		execCommand(cmd, `build.tar.gz 삭제`);
-	})();
+  !fileExists(tarFile) ? logger(`warn`, `build.tar.gz 파일이 존재하지 않음 - 삭제 건너뜀`) : (() => {
+  	const cmd = pf === `win` ? `del build.tar.gz` : `rm -rf build.tar.gz`;
+  	execCommand(cmd, `build.tar.gz 삭제`);
+  })();
 };
 
 // 4-5. client 배포 (원격 서버 스크립트 실행) -------------------------------------------------
@@ -145,17 +145,32 @@ const runServerRemoteScript = (pf = ``) => {
 		throw new Error(`배포 브랜치가 설정되지 않았습니다 (settings.git.deploy.resetBranch)`);
 	})();
 
+	// 불필요한 파일 정리
+	const uslessFiles = [
+		`.node`,
+		`.idea`,
+		`.github`,
+		`.vscode`,
+		`.gitattributes`,
+		`.gitignore*`,
+		`*.md`,
+		`eslint.config.mjs`,
+		`.server.swcrc`,
+		`package.default.json`,
+		`tsconfig.default.json`,
+	];
+
 	const commands = [
 		`cd ${serverPath}`,
 		`sudo git fetch --all`,
 		`sudo git reset --hard ${resetBranch}`,
 		`sudo rm -rf client`,
 		`sudo chmod -R 755 ${serverPath}`,
-		`if pm2 describe ${env.projectName} >/dev/null 2>&1; then sudo pm2 stop ${env.projectName} && pm2 save; fi`,
-		`sudo rm -rf node_modules package-lock.json`,
+		...uslessFiles.map((file) => `sudo rm -rf ${file}`),
 		`sudo npm install --legacy-peer-deps`,
-		`sudo pm2 start ecosystem.config.cjs --env production && pm2 save`,
-		`sleep 5 && sudo pm2 save --force`,
+		`if pm2 describe ${env.projectName} >/dev/null 2>&1; then sudo pm2 reload ecosystem.config.cjs --env production --update-env; else sudo pm2 start ecosystem.config.cjs --env production; fi`,
+		`pm2 save`,
+		`sleep 2 && sudo pm2 save --force`,
 	].join(` && `);
 
 	runSshCommand(pf, commands);
