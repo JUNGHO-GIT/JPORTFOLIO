@@ -44,43 +44,24 @@ export const Footer = memo(() => {
 	const footerNode = () => (
 		<Paper className={`layout-wrapper bg-darkest-navy shadow-top-4 border-0 radius-0 mt-40px`}>
 			<Grid container={true} spacing={0}>
-				<Grid
-					className={(xxs || xs || sm || md) ? `d-row-center` : (lg || xl || xxl) ? `mr-auto` : ``}
-					size={(xxs || xs || sm) ? 12 : (md || lg || xl || xxl) ? 7 : 7}
-				>
-					<Div className={`d-row-center`}>
-						<Img
-							hover={true}
-							shadow={false}
-							radius={false}
-							border={false}
-							src={`logo.webp`}
-							group={`main`}
-							className={`w-40px h-40px radius-50 mr-15px`}
-						/>
-						{(sm || md || lg || xl || xxl) && (
-							<Div className={`fs-1-1rem fw-600 white mr-15px`}>
-								{OBJECT?.year}
-							</Div>
-						)}
-						<Div className={`fs-1-0rem fw-400 white mr-15px`}>
-							{`All rights reserved by`}
-						</Div>
-						{(xs || sm || md || lg || xl || xxl) && (
-							<Div className={`fs-1-2rem fw-700 white`}>
-								{OBJECT?.name}
-							</Div>
-						)}
+				<Grid className={`d-row-center`} size={12}>
+					<Img
+						hover={true}
+						shadow={false}
+						radius={false}
+						border={false}
+						src={`logo.webp`}
+						group={`main`}
+						className={`w-40px h-40px radius-50 mr-15px`}
+					/>
+					<Div className={`fs-1-0rem fw-500 white mr-15px`}>
+						{OBJECT?.year}
 					</Div>
-				</Grid>
-				<Grid
-					className={(xxs || xs || sm) ? `d-none` : (md || lg || xl || xxl) ? `d-row-center` : ``}
-					size={(xxs || xs || sm) ? 0 : (md || lg || xl || xxl) ? 3 : 3}
-				>
-					<Div className={`d-row-center`}>
-						<Div className={`fs-0-8rem fw-400 white`}>
-							{OBJECT?.version}
-						</Div>
+					<Div className={`fs-1-2rem fw-700 white mr-15px`}>
+						{OBJECT?.name}
+					</Div>
+					<Div className={`fs-0-7rem fw-400 light mt-5px`}>
+						{OBJECT?.version}
 					</Div>
 				</Grid>
 			</Grid>

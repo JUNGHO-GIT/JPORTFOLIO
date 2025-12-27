@@ -5,12 +5,12 @@
  * @since 2025-12-25
  */
 
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "@exportReacts";
+import { React, memo, useCallback, useEffect, useMemo, useRef, useState } from "@exportReacts";
 import { useCommonValue } from "@exportHooks";
 import { Skeleton } from "@exportMuis";
 
 // -------------------------------------------------------------------------------------------------
-declare type ImgProps = React.HTMLAttributes<HTMLImageElement> & {
+declare interface ImgProps extends React.ImgHTMLAttributes<HTMLImageElement> {
 	group?: string;
 	src?: any;
 	hover?: boolean;
@@ -20,25 +20,25 @@ declare type ImgProps = React.HTMLAttributes<HTMLImageElement> & {
 	min?: number;
 	max?: number;
 	loading?: `eager` | `lazy`;
-};
-declare type ImageCacheEntry = {
+}
+declare interface ImageCacheEntry {
 	status: `loading` | `loaded` | `error`;
 	promise?: Promise<void>;
-};
+}
 
 // image cache ------------------------------------------------------------------------------------
-const IMAGE_CACHE_MAX = 200;
+const IMAGE_CACHE_MAX: number = 200;
 const imageCache: Map<string, ImageCacheEntry> = new Map();
 const preloadImage = (src: string): Promise<void> => {
-	const existing = imageCache.get(src);
+	const existing: ImageCacheEntry | undefined = imageCache.get(src);
 	if (existing) {
 		imageCache.delete(src);
 		imageCache.set(src, existing);
 		return existing.status === `loaded` ? Promise.resolve() : existing.promise!;
 	}
 
-	const img = new Image();
-	const promise = new Promise<void>((resolve, reject) => {
+	const img: HTMLImageElement = new Image();
+	const promise: Promise<void> = new Promise<void>((resolve, reject) => {
 		img.addEventListener(`load`, () => {
 			const cached = imageCache.get(src);
 			cached && (cached.status = `loaded`);
@@ -78,6 +78,7 @@ export const Img = memo((
 
 	// 2-1. useRef -----------------------------------------------------------------------------------
 	const currentImgSrcRef = useRef<string>(``);
+	const isEmptyHandledRef = useRef<boolean>(false);
 
 	// 2-2. useState ---------------------------------------------------------------------------------
 	const [fileName, setFileName] = useState<string>(``);
@@ -108,30 +109,67 @@ export const Img = memo((
 
 	// 4. callbacks ----------------------------------------------------------------------------------
 	const handleImageError = useCallback(() => {
-		const current = currentImgSrcRef.current;
-		const cached = imageCache.get(current);
+		const current: string = currentImgSrcRef.current;
+		const cached: ImageCacheEntry | undefined = imageCache.get(current);
 		cached && (cached.status = `error`);
-		// empty.webp 자체가 에러난 경우 다시 호출하지 않도록 차단
-		!isEmptyHandled && !current.includes(`empty.webp`)
-			? (setFileName(`empty`), setImgSrc(`${GCLOUD_URL}/main/empty.webp`), setIsEmptyHandled(true), setIsLoading(false))
+
+		const fallback: string = `${GCLOUD_URL}/main/empty.webp`;
+
+		// empty.webp 자체가 에러난 경우 다시 호출하지 않도록 차단 (ref로 제어해서 무한 루프 방지)
+		!isEmptyHandledRef.current && !current.includes(`empty.webp`)
+			? (() => {
+				isEmptyHandledRef.current = true;
+				setIsEmptyHandled(true);
+				setFileName(`empty`);
+				setImgSrc(fallback);
+				setIsLoading(false);
+			})()
 			: setIsLoading(false);
-	}, [isEmptyHandled, GCLOUD_URL]);
+	}, [GCLOUD_URL]);
 
 	// 5. useEffect (src 설정 + 이미지 로딩 캐시) -------------------------------------------------------
 	useEffect(() => {
 		setIsLoading(true);
 		setIsEmptyHandled(false);
+		isEmptyHandledRef.current = false;
 
-		const fallback = `${GCLOUD_URL}/main/empty.webp`;
-		const trimmed = typeof src === `string` ? src.trim() : ``;
-		const invalidName = !trimmed || !trimmed.includes(`.`) || trimmed.startsWith(`.`) || trimmed.endsWith(`.`) || trimmed === `.` || trimmed.length < 3;
-		const finalSrc = (!src || src === `` || src === `empty` || typeof src !== `string` || invalidName)
+		const fallback: string = `${GCLOUD_URL}/main/empty.webp`;
+		const trimmed: string = typeof src === `string` ? src.trim() : ``;
+
+		const isBlob: boolean = typeof trimmed === `string` && trimmed.startsWith(`blob:`);
+		const isData: boolean = typeof trimmed === `string` && trimmed.startsWith(`data:`);
+		const isHttp: boolean = typeof trimmed === `string` && (/^https?:\/\//).test(trimmed);
+		const isAbsoluteUrl: boolean = isBlob || isData || isHttp;
+
+		// 파일명일 때만 검증 (blob/data/http는 그대로 허용)
+		const invalidName: boolean = !isAbsoluteUrl && (
+			!trimmed ||
+			!trimmed.includes(`.`) ||
+			trimmed.startsWith(`.`) ||
+			trimmed.endsWith(`.`) ||
+			trimmed === `.` ||
+			trimmed.length < 3
+		);
+
+		const finalSrc: string = (!src || src === `` || src === `empty` || typeof src !== `string` || invalidName)
 			? fallback
-			: (group === `new` ? trimmed : `${GCLOUD_URL}/${group || `main`}/${trimmed}`);
+			: (
+				group === `new` || isAbsoluteUrl
+					? trimmed
+					: `${GCLOUD_URL}/${group ?? `main`}/${trimmed}`
+			);
 
-		setFileName(finalSrc === fallback ? `empty` : trimmed.split(`/`).pop()?.split(`.`)[0] || `empty`);
+		const resolvedName: string = finalSrc === fallback ? `empty` : (
+			isBlob || isData
+				? `preview`
+				: (trimmed.split(`/`).pop()?.split(`?`)[0]?.split(`#`)[0]?.split(`.`)[0] ?? `img`)
+		);
+
+		setFileName(resolvedName);
 		setImgSrc(finalSrc);
 		currentImgSrcRef.current = finalSrc;
+
+		isEmptyHandledRef.current = finalSrc === fallback;
 		setIsEmptyHandled(finalSrc === fallback);
 
 		if (finalSrc === fallback) {
@@ -139,7 +177,7 @@ export const Img = memo((
 			return;
 		}
 
-		const cached = imageCache.get(finalSrc);
+		const cached: ImageCacheEntry | undefined = imageCache.get(finalSrc);
 		if (cached?.status === `loaded`) {
 			setIsLoading(false);
 			return;
@@ -149,8 +187,8 @@ export const Img = memo((
 			return;
 		}
 
-		let cancelled = false;
-		const promise = cached?.promise || preloadImage(finalSrc);
+		let cancelled: boolean = false;
+		const promise: Promise<void> = cached?.promise ?? preloadImage(finalSrc);
 		promise.then(() => !cancelled && currentImgSrcRef.current === finalSrc && setIsLoading(false))
 		.catch(() => !cancelled && currentImgSrcRef.current === finalSrc && handleImageError());
 
@@ -174,9 +212,9 @@ export const Img = memo((
 		<img
 			{...restProps}
 			alt={fileName}
-			key={fileName}
+			key={imgSrc}
 			src={imgSrc}
-			loading={loading || `lazy`}
+			loading={loading ?? `lazy`}
 			className={imageClass}
 			style={{
 				imageRendering: `auto`,
