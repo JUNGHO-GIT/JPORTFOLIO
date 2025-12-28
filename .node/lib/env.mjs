@@ -8,26 +8,26 @@
 // 1. 프로젝트 설정 --------------------------------------------------------------------------
 export const env = {
 	basePath: `/var/www`,
-	"domain": `junghomun.com`,
-	"projectName": `JPORTFOLIO`,
-	"serverIp": `104.196.212.101`,
-	"localPort": {
-		"client": 3000,
-		"server": 4000,
+	domain: `junghomun.com`,
+	projectName: `JPORTFOLIO`,
+	serverIp: `104.196.212.101`,
+	localPort: {
+		client: 3000,
+		server: 4000,
 	},
-	"gcp": {
-		"bucket": `jungho-bucket`,
-		"path": `JPORTFOLIO/SERVER/build.tar.gz`,
-		"callback": `api/auth/google/callback`,
+	gcp: {
+		bucket: `jungho-bucket`,
+		path: `JPORTFOLIO/SERVER/build.tar.gz`,
+		callback: `api/auth/google/callback`,
 	},
-	"ssh": {
-		"win": {
-			"keyPath": `C:\\Users\\jungh\\.ssh\\JKEY`,
-			"serviceId": `junghomun00`,
+	ssh: {
+		win: {
+			keyPath: `C:\\Users\\jungh\\.ssh\\JKEY`,
+			serviceId: `junghomun00`,
 		},
-		"linux": {
-			"keyPath": `~/ssh/JKEY`,
-			"serviceId": `junghomun1234`,
+		linux: {
+			keyPath: `~/ssh/JKEY`,
+			serviceId: `junghomun1234`,
 		},
 	},
 };

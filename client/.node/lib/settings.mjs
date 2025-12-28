@@ -26,8 +26,10 @@ export const settings = {
 		repoPrivate: `JNODE_PRIVATE`,
 		defaultRemote: `private`,
 		defaultCdn: `rawGithub`,
+
+		// 1. forders
 		folders: [
-			// 1. node -------------------------------------------------------------------------------
+			// 1-1. node
 			{
 				sourcePath: `src/public/node/lib`,
 				targetPath: `.node/lib`,
@@ -51,7 +53,7 @@ export const settings = {
 				],
 			},
 
-			// 2. github --------------------------------------------------------------------------------
+			// 1-2. github
 			{
 				sourcePath: `src/public/github`,
 				targetPath: `.github`,
@@ -67,29 +69,34 @@ export const settings = {
 				],
 			},
 
-			// 3. config --------------------------------------------------------------------------------
-			{
-				sourcePath: `src/public/config`,
-				targetPath: ``,
-				files: [`package.default.json`],
-			},
+			// 1-3. config
 			{
 				sourcePath: `src/public/config`,
 				targetPath: ``,
 				files: [
 					`.server.swcrc`,
 					`eslint.config.mjs`,
-					`tsconfig.default.json`,
+					`ecosystem.config.cjs`,
+					`package.default.json`,
 				],
 			},
 			{
 				sourcePath: `src/public/config`,
 				targetPath: `client`,
-				files: [
-					`.client.swcrc`,
-					`tsconfig.default.json`,
-				],
+				files: [`.client.swcrc`],
 			},
+		],
+
+		// 2. rm files -----------------------------------------------------------------------------
+		rmFiles: [
+			`client/.server.swcrc`,
+			`client/eslint.config.mjs`,
+			`client/ecosystem.config.cjs`,
+			`client/package.default.json`,
+			`client/.gitignore`,
+			`client/.gitignore.public`,
+			`client/.gitignore.private`,
+			`client/.gitattributes`,
 		],
 	},
 };

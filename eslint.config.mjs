@@ -2386,7 +2386,6 @@ export default defineConfig([
 			`**/.gradle/**`,
 			`**/.bin/**`,
 			`**/.gen/**`,
-			`**/.node/**`,
 			`**/.vscode/**`,
 			`**/dist/**`,
 			`**/.dist/**`,

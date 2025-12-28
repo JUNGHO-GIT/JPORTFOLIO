@@ -435,7 +435,7 @@ const gitFetch = () => {
 };
 
 // 8. Git Push -------------------------------------------------------------------------------
-const gitPush = (remoteName = ``, ignoreFilePath = ``, msg = ``) => {
+const gitPush = (remoteName = ``, ignoreFilePath = ``, msg = ``, baseCommit = ``) => {
 	const remoteExists = remoteUtils.exists(remoteName);
 	!remoteExists && logger(`info`, `Remote '${remoteName}' 존재하지 않음 - 건너뜀`);
 
@@ -446,6 +446,12 @@ const gitPush = (remoteName = ``, ignoreFilePath = ``, msg = ``) => {
 		targetBranch && (() => {
 			const fullRef = `${remoteName}/${targetBranch}`;
 			logger(`info`, `Git Push 시작: ${remoteName} (${fullRef})`);
+
+			// 베이스 커밋으로 리셋 (각 push마다 독립적인 커밋 생성)
+			baseCommit && (() => {
+				logger(`info`, `베이스 커밋으로 ��셋: ${baseCommit}`);
+				execSync(`git reset --hard ${baseCommit}`, { stdio: `pipe` });
+			})();
 
 			const ignorePublicFile = fs.readFileSync(`.gitignore.public`, `utf8`);
 			const ignoreContent = fs.readFileSync(ignoreFilePath, `utf8`);
@@ -491,13 +497,21 @@ const runPushProcess = async () => {
 	envManager.syncFiles();
 	updateVersionAndChangelog(commitMsg);
 
+	// 버전 업데이트 후 현재 상태를 임시 커밋으로 저장
+	execSync(`git add .`, { stdio: `pipe` });
+	const hasChanges = execSync(`git status --porcelain`, { encoding: `utf8` }).trim();
+	hasChanges && execSync(`git commit -m "temp: pre-push state"`, { stdio: `pipe` });
+	const baseCommit = execSync(`git rev-parse HEAD`, { encoding: `utf8` }).trim();
+	logger(`info`, `베이스 커밋 저장: ${baseCommit.slice(0, 7)}`);
+
 	envManager.modify();
 	try {
-		gitPush(settings.git.remotes.public.name, `.gitignore.public`, commitMsg);
-		gitPush(settings.git.remotes.private.name, `.gitignore.private`, commitMsg);
+		gitPush(settings.git.remotes.public.name, `.gitignore.public`, commitMsg, baseCommit);
+		gitPush(settings.git.remotes.private.name, `.gitignore.private`, commitMsg, baseCommit);
 		logger(`success`, `Git Push 완료`);
 	}
 	finally {
+		// private 브랜치 상태로 유지 (private이 전체 파일 포함)
 		envManager.restore();
 		envManager.cleanupBackup();
 	}

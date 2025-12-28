@@ -39,13 +39,20 @@ const NODE_ROOT = path.resolve(SCRIPT_DIR, `..`);
 const PROJECT_ROOT = path.resolve(NODE_ROOT, `..`);
 const CDN = { rawGithub: (owner, repo, branch, filePath) => `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${filePath}` };
 
-// 4. HTTP GET 요청 (Promise) ----------------------------------------------------------------
+// 3. HTTP GET 요청 (Promise) ----------------------------------------------------------------
 const httpGet = (url = ``, token = ``) => new Promise((resolve, reject) => {
 	const headers = { "User-Agent": `JNODE-Sync` };
 	token && (headers.Authorization = `token ${token}`);
 
 	const req = https.get(url, { headers: headers }, (res) => {
-		res.statusCode >= 300 && res.statusCode < 400 && res.headers.location ? httpGet(res.headers.location, token).then(resolve).catch(reject) : res.statusCode !== 200 ? reject(new Error(`HTTP ${res.statusCode}: ${url}`)) : (() => {
+		const statusCode = res.statusCode || 0;
+		const location = res.headers.location;
+
+		(statusCode >= 300 && statusCode < 400 && location) ? (
+			httpGet(location, token).then(resolve).catch(reject)
+		) : statusCode !== 200 ? (
+			reject(new Error(`HTTP ${statusCode}: ${url}`))
+		) : (() => {
 			let data = ``;
 			res.on(`data`, (chunk) => {
 				data += chunk;
@@ -63,29 +70,41 @@ const httpGet = (url = ``, token = ``) => new Promise((resolve, reject) => {
 	});
 });
 
-// 5. server / client 동기화 루트 결정 -------------------------------------------------------
+// 4. server / client 동기화 루트 결정 -------------------------------------------------------
 const resolveSyncRoot = (rootMode = `server`) => {
 	const isClientRoot = path.basename(PROJECT_ROOT) === `client`;
 	const hasClientSub = fileExists(path.join(PROJECT_ROOT, `client`));
 	const baseRoot = PROJECT_ROOT;
 
-	const syncRoot = rootMode === `client` ? (isClientRoot ? baseRoot : hasClientSub ? path.join(baseRoot, `client`) : baseRoot) : baseRoot;
+	const syncRoot = rootMode === `client` ? (
+		isClientRoot ? baseRoot : hasClientSub ? path.join(baseRoot, `client`) : baseRoot
+	) : (
+		baseRoot
+	);
 
 	return syncRoot;
 };
 
-// 6. 폴더 스킵 규칙 -------------------------------------------------------------------------
+// 5. 폴더/파일 스킵 규칙 --------------------------------------------------------------------
+const normalizeRelPath = (p = ``) => (p ? p.replaceAll(`\\`, `/`) : ``);
+
 const shouldSkipFolder = (rootMode = `server`, relTargetPath = ``) => {
-	const normalized = relTargetPath ? relTargetPath.replaceAll(`\\`, `/`) : ``;
+	const normalized = normalizeRelPath(relTargetPath);
 	const segments = normalized ? normalized.split(`/`) : [];
 	const hasClient = segments.includes(`client`);
 	const hasServer = segments.includes(`server`);
-	const skip = rootMode === `server` ? hasClient : rootMode === `client` ? hasServer : false;
+
+	const skip = rootMode === `server` ? (
+		hasClient
+	) : rootMode === `client` ? (
+		hasServer
+	) : (
+		false
+	);
 
 	return skip;
 };
 
-// 7. 파일 스킵 규칙 -------------------------------------------------------------------------
 const shouldSkipFile = (rootMode = `server`, fileName = ``) => {
 	const isClientFile = fileName.includes(`client`);
 	const isServerFile = fileName.includes(`server`);
@@ -101,9 +120,24 @@ const shouldSkipFile = (rootMode = `server`, fileName = ``) => {
 	return skip;
 };
 
-// 8. 모든 파일 동기화 -----------------------------------------------------------------------
+// 6. 동기화 핵심 로직 -----------------------------------------------------------------------
+const ensureDir = (dirPath = ``, displayPath = ``) => {
+	!fileExists(dirPath) && (() => {
+		fs.mkdirSync(dirPath, { recursive: true });
+		logger(`info`, `폴더 생성: ${displayPath} (${dirPath})`);
+	})();
+};
+
+const resolveTargetDir = (syncRoot = ``, relTargetPath = ``) => {
+	const normalizedTarget = normalizeRelPath(relTargetPath);
+	const targetDir = !relTargetPath ? syncRoot : normalizedTarget === `client` ? syncRoot : path.join(syncRoot, relTargetPath);
+
+	return targetDir;
+};
+
 const syncAll = async () => {
 	logger(`info`, `GitHub CDN 동기화 시작`);
+
 	const { cdn, git } = settings;
 
 	const isPrivate = cdn.defaultRemote === `private`;
@@ -139,43 +173,43 @@ const syncAll = async () => {
 	logger(`info`, `SCRIPT_DIR: ${SCRIPT_DIR}`);
 	logger(`info`, `PROJECT_ROOT: ${PROJECT_ROOT}`);
 	logger(`info`, `동기화 루트 경로: ${syncRoot}`);
+
 	if (!canRun) {
 		logger(`warn`, `동기화 조건 불충족으로 실행 중단`);
 		return;
 	}
-	const folders = cdn.folders;
-	for (const [folderIndex, folder] of folders.entries()) {
+
+	for (const [folderIndex, folder] of cdn.folders.entries()) {
 		if (!folder || !Array.isArray(folder.files)) {
 			logger(`warn`, `잘못된 폴더 설정 감지, 건너뜀: ${JSON.stringify(folder)}`);
 			continue;
 		}
-		const {
-			sourcePath, targetPath: relTargetPath, files,
-		} = folder;
-		const normalizedTarget = relTargetPath ? relTargetPath.replaceAll(`\\`, `/`) : ``;
+
+		const { sourcePath, targetPath: relTargetPath, files } = folder;
+
 		if (shouldSkipFolder(mode, relTargetPath || ``)) {
 			logger(`info`, `모드(${mode})에서 제외된 폴더: ${relTargetPath || `루트`} (index: ${folderIndex})`);
 			continue;
 		}
-		const targetDir = !relTargetPath ? syncRoot : normalizedTarget === `client` ? syncRoot : path.join(syncRoot, relTargetPath);
 
-		const isRoot = !relTargetPath || targetDir === syncRoot;
+		const targetDir = resolveTargetDir(syncRoot, relTargetPath);
 		const displayPath = relTargetPath || `루트`;
+		const isRoot = !relTargetPath || targetDir === syncRoot;
 
 		logger(`info`, `대상 폴더: ${displayPath} (index: ${folderIndex})`);
-		!isRoot && !fileExists(targetDir) && (() => {
-			fs.mkdirSync(targetDir, { recursive: true });
-			logger(`info`, `폴더 생성: ${displayPath} (${targetDir})`);
-		})();
+		!isRoot && ensureDir(targetDir, displayPath);
+
 		for (const fileName of files) {
 			if (!fileName) {
 				logger(`warn`, `파일명이 비어 있어 건너뜀 (폴더: ${displayPath})`);
 				continue;
 			}
+
 			if (shouldSkipFile(mode, fileName)) {
 				logger(`info`, `모드(${mode})에서 제외된 파일: ${fileName} (폴더: ${displayPath})`);
 				continue;
 			}
+
 			const targetFilePath = path.join(targetDir, fileName);
 			const remoteFilePath = `${sourcePath}/${fileName}`;
 			const url = buildUrl(owner, repo, branch, remoteFilePath);
@@ -195,10 +229,12 @@ const syncAll = async () => {
 				if (!errMsg.includes(`HTTP 404`)) {
 					logger(`info`, `[삭제 건너뜀] 원격 파일 오류가 404가 아님: ${fileName}`);
 				}
+
 				// 1. 로컬에 파일이 존재하는지 명확히 확인
 				if (!fileExists(targetFilePath)) {
 					logger(`info`, `[삭제 건너뜀] 로컬에 파일이 존재하지 않음: ${targetFilePath}`);
 				}
+
 				// 2. 파일 삭제 시도
 				try {
 					fs.unlinkSync(targetFilePath);
@@ -211,7 +247,82 @@ const syncAll = async () => {
 			}
 		}
 	}
+
 	logger(`info`, `GitHub CDN 동기화 완료`);
+};
+
+// 98. settings.cdn.rmFiles 기반 후처리 삭제 ---------------------------------------------------
+const removeFiles = (syncRoot = ``) => {
+	const rmFiles = settings?.cdn?.rmFiles;
+	let canRun = true;
+
+	(!Array.isArray(rmFiles) || rmFiles.length === 0) && (() => {
+		logger(`info`, `rmFiles 설정 없음 (settings.cdn.rmFiles 비어 있음)`);
+		canRun = false;
+	})();
+
+	if (!canRun) {
+		return;
+	}
+
+	const isClientRoot = path.basename(PROJECT_ROOT) === `client`;
+	const baseRoot = PROJECT_ROOT;
+
+	for (const rel of rmFiles) {
+		if (!rel) {
+			logger(`warn`, `[rmFiles 건너뜀] 경로가 비어 있음`);
+			continue;
+		}
+
+		let normalized = String(rel).replaceAll(`\\`, `/`).replace(/^\.\//, ``);
+		isClientRoot && normalized.startsWith(`client/`) && (() => {
+			normalized = normalized.slice(`client/`.length);
+		})();
+
+		const candidateByProjectRoot = path.resolve(baseRoot, normalized);
+		const candidateBySyncRoot = path.resolve(syncRoot, normalized);
+		const candidates = [...new Set([candidateByProjectRoot, candidateBySyncRoot])];
+
+		let handled = false;
+
+		for (const targetAbs of candidates) {
+			if (!fileExists(targetAbs)) {
+				continue;
+			}
+
+			const resolvedTarget = path.resolve(targetAbs);
+			const resolvedProjectRoot = path.resolve(PROJECT_ROOT);
+			const resolvedSyncRoot = path.resolve(syncRoot);
+
+			if (resolvedTarget === resolvedProjectRoot || resolvedTarget === resolvedSyncRoot) {
+				logger(`warn`, `[rmFiles 건너뜀] 보호 경로로 판단됨: ${resolvedTarget}`);
+				handled = true;
+				break;
+			}
+
+			// PROJECT_ROOT 밖이면 삭제 금지
+			if (!resolvedTarget.startsWith(resolvedProjectRoot + path.sep) && resolvedTarget !== resolvedProjectRoot) {
+				logger(`warn`, `[rmFiles 건너뜀] 프로젝트 루트 خارج 경로: ${resolvedTarget}`);
+				handled = true;
+				break;
+			}
+
+			try {
+				fs.rmSync(resolvedTarget, { recursive: true, force: true });
+				logger(`warn`, `[rmFiles 삭제 성공] ${resolvedTarget}`);
+				handled = true;
+				break;
+			}
+			catch (error) {
+				const errMsg = error instanceof Error ? error.message : String(error);
+				logger(`error`, `[rmFiles 삭제 실패] ${resolvedTarget} - ${errMsg}`);
+				handled = true;
+				break;
+			}
+		}
+
+		!handled && logger(`info`, `[rmFiles 건너뜀] 대상 경로가 존재하지 않음: ${normalized}`);
+	}
 };
 
 // 99. 실행 ----------------------------------------------------------------------------------
@@ -228,6 +339,8 @@ const syncAll = async () => {
 	}
 	try {
 		args2 === `sync` && await syncAll();
+		args2 === `sync` && removeFiles(resolveSyncRoot(mode));
+
 		logger(`info`, `스크립트 정상 종료: ${TITLE}`);
 		process.exit(0);
 	}
