@@ -1,6 +1,6 @@
 /**
  * @file ecosystem.config.cjs
- * @description PM2 설정 파일 (멀티 프로젝트 통합)
+ * @description PM2 설정 파일
  */
 
 // 1. 공통 앱 생성기 --------------------------------------------------------------------------------
@@ -40,7 +40,7 @@ module.exports = {
     // 2-3. PAJUKAESONG
     createApp({
       name: `PAJUKAESONG`,
-      cwd: `/var/www/pajukaesong.com/PAJUKAESONG/server`,
+      cwd: `/var/www/junghomun.com/PAJUKAESONG/server`,
     }),
   ],
 };
