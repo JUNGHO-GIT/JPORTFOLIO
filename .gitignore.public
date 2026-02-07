@@ -147,19 +147,6 @@
 **/bun.lock
 **/bun.lock.*
 
-# 7. Tool / build configs
-**/.watchmanconfig
-**/.watchmanconfig.*
-**/.prettierrc
-**/.prettierrc.*
-**/.prettierignore
-**/.prettierignore.*
-**/.eslintrc
-**/.eslintrc.*
-**/.eslintignore
-**/.eslintignore.*
-**/.stylelintrc
-**/.stylelintrc.*
-**/.stylelintignore
+# 7. etc
 **/ecosystem.config.js
 **/ecosystem.config.*
