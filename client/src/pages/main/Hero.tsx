@@ -61,21 +61,21 @@ export const Hero = memo(() => {
 						radius={false}
 						group={`main`}
 						src={(xxs || xs) ? (
-                `main2.webp`
-              ) : (sm || md || lg || xl || xxl) ? (
-                `main1.webp`
-              ) : (
-                `main1.webp`
-              )}
+              `main2.webp`
+            ) : (sm || md || lg || xl || xxl) ? (
+              `main1.webp`
+            ) : (
+              `main1.webp`
+            )}
 						className={(xxs || xs) ? (
-                `w-110p`
-              ) : (sm || md) ? (
-                `w-200p`
-              ) : (lg || xl || xxl) ? (
-                `w-100p`
-              ) : (
-                `w-100p`
-              )}
+              `w-110p`
+            ) : (sm || md) ? (
+              `w-200p`
+            ) : (lg || xl || xxl) ? (
+              `w-100p`
+            ) : (
+              `w-100p`
+            )}
 					/>
 					<Div className={`p-absolute`}>
 						<Div className={`fs-2-2rem fw-700 white mb-10px`}>

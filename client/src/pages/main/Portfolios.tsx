@@ -122,7 +122,7 @@ export const Portfolios = memo(() => {
 				spacing={2}
 				className={`h-100p d-left`}
 			>
-				{OBJECT?.portfolios_section?.filter((_: any, f: number) => f < 6).map((item: any, i: number) => (
+				{OBJECT?.portfolios_section?.filter((_: any, f: number) => f < 6 && f !== 1).map((item: any, i: number) => (
 					<Grid size={(xxs || xs || sm) ? 12 : (md || lg) ? 6 : (xl || xxl) ? 4 : 4} key={i}>
 						<Div className={`p-relative d-center`}>
 							<Div className={`image-container p-5px`}>
