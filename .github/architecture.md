@@ -78,7 +78,8 @@
 | 스크립트 동기화 | `bun run sync` | `.node/` CDN 스크립트 동기화 |
 | 프로덕션 배포 | `pm2 start ecosystem.config.cjs --env production` | PM2로 서버 실행 |
 
-> **주의**: Bun 미설치 환경에서는 `node .node/mjs/swc.mjs --npm --build --server` 형태로 npm fallback 사용 가능.
+> **주의**: Bun 미설치 환경에서는 `--bun`을 `--npm`으로 교체하여 npm fallback 사용 가능.
+> 예: `node .node/mjs/swc.mjs --npm --build --server`
 
 ## 5. 사용 가능한 스크립트
 
