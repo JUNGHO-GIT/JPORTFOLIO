@@ -1,6 +1,6 @@
 {
   "name": "jportfolio-server",
-  "version": "1.4.6",
+  "version": "1.4.7",
   "private": true,
   "type": "module",
   "main": "index.ts",
@@ -41,11 +41,19 @@
     "start": "bun .node/mjs/swc.mjs --bun --start --server",
     "build": "bun .node/mjs/swc.mjs --bun --build --server",
     "fix": "bun .node/mjs/fix.mjs --bun --fix",
+    "sort": "bun .node/mjs/sort.mjs --bun --sort",
+    "selected": "node .node/mjs/selected.mjs --bun --selected",
     "reset": "bun .node/mjs/reset.mjs --bun --reset",
+    "remove": "bun .node/mjs/remove.mjs --bun --remove",
     "vsce": "bun .node/mjs/vsce.mjs --bun --package",
     "gcloud": "bun .node/mjs/gcloud.mjs --bun --server",
-    "git-push-y": "bun .node/mjs/git.mjs --bun --push --y",
-    "git-push-n": "bun .node/mjs/git.mjs --bun --push --n"
+    "git-fetch": "bun .node/mjs/git.mjs --bun --fetch",
+    "git-push-msg-y": "bun .node/mjs/git.mjs --bun --push --y",
+    "git-push-msg-n": "bun .node/mjs/git.mjs --bun --push --n",
+    "fs:ai-to-local": "bun .node/mjs/ai-config.mjs to-local",
+    "fs:ai-to-jnode": "bun .node/mjs/ai-config.mjs to-jnode",
+    "fs:vscode-to-local": "bun .node/mjs/vscode-config.mjs to-local",
+    "fs:vscode-to-jnode": "bun .node/mjs/vscode-config.mjs to-jnode"
   },
   "dependencies": {
     "@google-cloud/storage": "^7.19.0",

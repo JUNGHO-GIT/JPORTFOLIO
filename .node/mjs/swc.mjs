@@ -42,7 +42,7 @@ const getSwcConfig = () => {
   return result;
 };
 
-// 3. 명�� 실행 ------------------------------------------------------------------------------
+// 3. 명령 실행 ------------------------------------------------------------------------------
 const spawnProcess = (pmArgs = []) => {
   const useShell = args1 !== `bun`;
   const result = spawn(args1, pmArgs, {

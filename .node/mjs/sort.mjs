@@ -82,9 +82,9 @@ const sortObject = (input) => {
     ]);
   });
 
+  const orderedGroups = Object.keys(grouped);
   const sortedObject = {};
-  Object.keys(grouped)
-  .sort()
+  orderedGroups
   .forEach((group) => {
     grouped[group].sort((a, b) => a[0].localeCompare(b[0]));
     grouped[group].forEach((entry) => {
@@ -130,9 +130,444 @@ const convertToJSONC = (sortedArray) => {
   return result;
 };
 
+// 5-1. JSONC 정규화 ----------------------------------------------------------------------------
+const removeJsonComments = (content = ``) => {
+  let index = 0;
+  let inString = false;
+  let quoteChar = ``;
+  let escaped = false;
+  let inLineComment = false;
+  let inBlockComment = false;
+  let normalized = ``;
+
+  while (index < content.length) {
+    const currentChar = content[index];
+    const nextChar = content[index + 1] || ``;
+
+    if (inLineComment) {
+      if (currentChar === `\n`) {
+        inLineComment = false;
+        normalized += currentChar;
+      }
+
+      index += 1;
+      continue;
+    }
+
+    if (inBlockComment) {
+      if (currentChar === `*` && nextChar === `/`) {
+        inBlockComment = false;
+        index += 2;
+        continue;
+      }
+
+      index += 1;
+      continue;
+    }
+
+    if (inString) {
+      normalized += currentChar;
+
+      if (escaped) {
+        escaped = false;
+      }
+      else if (currentChar === `\\`) {
+        escaped = true;
+      }
+      else if (currentChar === quoteChar) {
+        inString = false;
+        quoteChar = ``;
+      }
+
+      index += 1;
+      continue;
+    }
+
+    if (currentChar === `"` || currentChar === `'`) {
+      inString = true;
+      quoteChar = currentChar;
+      normalized += currentChar;
+      index += 1;
+      continue;
+    }
+
+    if (currentChar === `/` && nextChar === `/`) {
+      inLineComment = true;
+      index += 2;
+      continue;
+    }
+
+    if (currentChar === `/` && nextChar === `*`) {
+      inBlockComment = true;
+      index += 2;
+      continue;
+    }
+
+    normalized += currentChar;
+    index += 1;
+  }
+
+  const result = normalized;
+  return result;
+};
+
+const removeJsonTrailingCommas = (content = ``) => {
+  let index = 0;
+  let inString = false;
+  let quoteChar = ``;
+  let escaped = false;
+  let normalized = ``;
+
+  while (index < content.length) {
+    const currentChar = content[index];
+
+    if (inString) {
+      normalized += currentChar;
+
+      if (escaped) {
+        escaped = false;
+      }
+      else if (currentChar === `\\`) {
+        escaped = true;
+      }
+      else if (currentChar === quoteChar) {
+        inString = false;
+        quoteChar = ``;
+      }
+
+      index += 1;
+      continue;
+    }
+
+    if (currentChar === `"` || currentChar === `'`) {
+      inString = true;
+      quoteChar = currentChar;
+      normalized += currentChar;
+      index += 1;
+      continue;
+    }
+
+    if (currentChar === `,`) {
+      let nextIndex = index + 1;
+
+      while (nextIndex < content.length && /\s/.test(content[nextIndex])) {
+        nextIndex += 1;
+      }
+
+      const nextToken = content[nextIndex];
+      const isTrailingComma = nextToken === `}` || nextToken === `]`;
+
+      if (isTrailingComma) {
+        index += 1;
+        continue;
+      }
+    }
+
+    normalized += currentChar;
+    index += 1;
+  }
+
+  const result = normalized;
+  return result;
+};
+
+const parseJsonWithJsoncFallback = (content = ``) => {
+  let parsedData = null;
+
+  try {
+    parsedData = JSON.parse(content);
+  }
+  catch (jsonError) {
+    const withoutComments = removeJsonComments(content);
+    const withoutTrailingCommas = removeJsonTrailingCommas(withoutComments);
+
+    try {
+      parsedData = JSON.parse(withoutTrailingCommas);
+    }
+    catch (jsoncError) {
+      const parseError = jsoncError instanceof Error ? jsoncError.message : String(jsoncError);
+      throw new Error(`JSON Parse error: ${parseError}`);
+    }
+  }
+
+  const result = parsedData;
+  return result;
+};
+
+const detectLineBreak = (content = ``) => {
+  const isWindowsLineBreak = content.includes(`\r\n`);
+  const result = isWindowsLineBreak ? `\r\n` : `\n`;
+  return result;
+};
+
+const parseLeadingKeyFromSegment = (segment = ``) => {
+  let index = 0;
+  let key = ``;
+
+  while (index < segment.length) {
+    const currentChar = segment[index];
+    const nextChar = segment[index + 1] || ``;
+
+    if (/\s/.test(currentChar)) {
+      index += 1;
+      continue;
+    }
+
+    if (currentChar === `/` && nextChar === `/`) {
+      index += 2;
+
+      while (index < segment.length && segment[index] !== `\n`) {
+        index += 1;
+      }
+
+      continue;
+    }
+
+    if (currentChar === `/` && nextChar === `*`) {
+      index += 2;
+
+      while (index < segment.length) {
+        const blockChar = segment[index];
+        const blockNextChar = segment[index + 1] || ``;
+
+        if (blockChar === `*` && blockNextChar === `/`) {
+          index += 2;
+          break;
+        }
+
+        index += 1;
+      }
+
+      continue;
+    }
+
+    if (currentChar !== `"`) {
+      break;
+    }
+
+    index += 1;
+
+    let escaped = false;
+    key = ``;
+
+    while (index < segment.length) {
+      const keyChar = segment[index];
+
+      if (escaped) {
+        key += keyChar;
+        escaped = false;
+        index += 1;
+        continue;
+      }
+
+      if (keyChar === `\\`) {
+        escaped = true;
+        index += 1;
+        continue;
+      }
+
+      if (keyChar === `"`) {
+        index += 1;
+        break;
+      }
+
+      key += keyChar;
+      index += 1;
+    }
+
+    while (index < segment.length && /\s/.test(segment[index])) {
+      index += 1;
+    }
+
+    if (segment[index] === `:`) {
+      return key;
+    }
+
+    break;
+  }
+
+  return ``;
+};
+
+const splitTopLevelObjectSegments = (body = ``) => {
+  const segments = [];
+  let currentSegment = ``;
+  let index = 0;
+  let nestedDepth = 0;
+  let inString = false;
+  let quoteChar = ``;
+  let escaped = false;
+  let inLineComment = false;
+  let inBlockComment = false;
+
+  while (index < body.length) {
+    const currentChar = body[index];
+    const nextChar = body[index + 1] || ``;
+
+    if (inLineComment) {
+      currentSegment += currentChar;
+
+      if (currentChar === `\n`) {
+        inLineComment = false;
+      }
+
+      index += 1;
+      continue;
+    }
+
+    if (inBlockComment) {
+      if (currentChar === `*` && nextChar === `/`) {
+        currentSegment += `${currentChar}${nextChar}`;
+        inBlockComment = false;
+        index += 2;
+        continue;
+      }
+
+      currentSegment += currentChar;
+      index += 1;
+      continue;
+    }
+
+    if (inString) {
+      currentSegment += currentChar;
+
+      if (escaped) {
+        escaped = false;
+      }
+      else if (currentChar === `\\`) {
+        escaped = true;
+      }
+      else if (currentChar === quoteChar) {
+        inString = false;
+        quoteChar = ``;
+      }
+
+      index += 1;
+      continue;
+    }
+
+    if (currentChar === `"` || currentChar === `'`) {
+      inString = true;
+      quoteChar = currentChar;
+      currentSegment += currentChar;
+      index += 1;
+      continue;
+    }
+
+    if (currentChar === `/` && nextChar === `/`) {
+      inLineComment = true;
+      currentSegment += `${currentChar}${nextChar}`;
+      index += 2;
+      continue;
+    }
+
+    if (currentChar === `/` && nextChar === `*`) {
+      inBlockComment = true;
+      currentSegment += `${currentChar}${nextChar}`;
+      index += 2;
+      continue;
+    }
+
+    if (currentChar === `{` || currentChar === `[`) {
+      nestedDepth += 1;
+      currentSegment += currentChar;
+      index += 1;
+      continue;
+    }
+
+    if (currentChar === `}` || currentChar === `]`) {
+      if (nestedDepth > 0) {
+        nestedDepth -= 1;
+      }
+
+      currentSegment += currentChar;
+      index += 1;
+      continue;
+    }
+
+    if (currentChar === `,` && nestedDepth === 0) {
+      const trimmedSegment = currentSegment.trim();
+
+      if (trimmedSegment !== ``) {
+        segments.push(trimmedSegment);
+      }
+
+      currentSegment = ``;
+      index += 1;
+      continue;
+    }
+
+    currentSegment += currentChar;
+    index += 1;
+  }
+
+  const lastSegment = currentSegment.trim();
+
+  if (lastSegment !== ``) {
+    segments.push(lastSegment);
+  }
+
+  return segments;
+};
+
+const formatFallbackObjectEntry = (key = ``, value, lineBreak = `\n`) => {
+  const stringifiedValue = JSON.stringify(value, null, 2);
+  const normalizedValue = stringifiedValue.split(`\n`).join(`${lineBreak}  `);
+  const result = `  "${key}": ${normalizedValue}`;
+  return result;
+};
+
+const sortObjectJsonc = (rawContent = ``, sortedObject = {}) => {
+  const trimmedContent = rawContent.trim();
+  const isTopLevelObject = trimmedContent.startsWith(`{`) && trimmedContent.endsWith(`}`);
+
+  if (!isTopLevelObject) {
+    return ``;
+  }
+
+  const firstBraceIndex = rawContent.indexOf(`{`);
+  const lastBraceIndex = rawContent.lastIndexOf(`}`);
+  const body = rawContent.slice(firstBraceIndex + 1, lastBraceIndex);
+  const lineBreak = detectLineBreak(rawContent);
+  const segments = splitTopLevelObjectSegments(body);
+  const blockByKey = {};
+
+  segments.forEach((segment) => {
+    const key = parseLeadingKeyFromSegment(segment);
+    const hasValidKey = key !== ``;
+
+    if (hasValidKey) {
+      const normalizedSegment = segment.replace(/,\s*$/u, ``);
+
+      if (!(key in blockByKey)) {
+        blockByKey[key] = normalizedSegment;
+      }
+    }
+  });
+
+  const sortedKeys = Object.keys(sortedObject);
+  const sortedBlocks = sortedKeys.map((key) => {
+    const hasExistingBlock = key in blockByKey;
+    const block = hasExistingBlock
+      ? blockByKey[key]
+      : formatFallbackObjectEntry(key, sortedObject[key], lineBreak);
+
+    return block;
+  });
+
+  if (sortedBlocks.length === 0) {
+    return `{}`;
+  }
+
+  const joinedBody = sortedBlocks.join(`,${lineBreak}`);
+  const sortedJsonc = `{${lineBreak}${joinedBody}${lineBreak}}`;
+  return sortedJsonc;
+};
+
 // 6. 파일 읽기 -------------------------------------------------------------------------------
 const readInputFile = (filePath) => {
   let fileData = null;
+  let rawContent = ``;
   let errorMessage = ``;
   let success = false;
 
@@ -147,7 +582,8 @@ const readInputFile = (filePath) => {
 
     fileExists && (() => {
       const fileContent = fs.readFileSync(absolutePath, `utf8`);
-      const parsedData = JSON.parse(fileContent);
+      rawContent = fileContent;
+      const parsedData = parseJsonWithJsoncFallback(fileContent);
       fileData = parsedData;
       success = true;
     })();
@@ -164,6 +600,7 @@ const readInputFile = (filePath) => {
   const result = {
     success: success,
     data: fileData,
+    raw: rawContent,
     error: errorMessage,
   };
   return result;
@@ -205,7 +642,7 @@ const saveResult = (content, originalPath, modeParam) => {
 };
 
 // 8. 데이터 처리 -----------------------------------------------------------------------------
-const processData = (input, modeParam, originalPath) => {
+const processData = (input, modeParam, originalPath, rawContent = ``) => {
   const isArrayMode = modeParam === `array`;
   const isObjectMode = modeParam === `object`;
 
@@ -233,7 +670,9 @@ const processData = (input, modeParam, originalPath) => {
 
     isPlainObject && (() => {
       const sorted = sortObject(input);
-      const json = JSON.stringify(sorted, null, 2);
+      const sortedJsonc = sortObjectJsonc(rawContent, sorted);
+      const hasJsoncOutput = sortedJsonc !== ``;
+      const json = hasJsoncOutput ? sortedJsonc : JSON.stringify(sorted, null, 2);
       outputContent = json;
     })();
 
@@ -265,7 +704,7 @@ const runSort = async (filePath, modeParam) => {
   })();
 
   readResult.success && (() => {
-    const processResult = processData(readResult.data, modeParam, filePath);
+    const processResult = processData(readResult.data, modeParam, filePath, readResult.raw);
     success = processResult.success;
   })();
 
