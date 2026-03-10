@@ -1,6 +1,6 @@
 /**
- * @file git.mjs
- * @description Git 관련 자동화 스크립트 (ESM)
+ * @file action.mjs
+ * @description Git 관련 액션 엔트리 및 공통 유틸리티
  * @author Jungho
  * @since 2025-12-03
  */
@@ -12,13 +12,10 @@ import os from "node:os";
 import process from "node:process";
 import { execSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import {
-  logger, runPrompt, fileExists,
-} from "../lib/utils.mjs";
-import { env } from "../lib/env.mjs";
-import { settings } from "../lib/settings.mjs";
+import { logger, fileExists } from "../../lib/utils.mjs";
+import { env } from "../../lib/env.mjs";
+import { settings } from "../../lib/settings.mjs";
 
-// 1. 인자 파싱 ------------------------------------------------------------------------------
 const __filename = fileURLToPath(import.meta.url);
 const TITLE = path.basename(__filename);
 const argv = process.argv.slice(2);
@@ -39,64 +36,159 @@ const args3 = argv.find((arg) => [
 const BACKUP_DIR = path.join(`.node`, `.tmp`);
 const BACKUP_PATH = path.join(BACKUP_DIR, `git.mjs.backup.json`);
 
-// 2. 유틸리티 함수 --------------------------------------------------------------------------
-const getTimestamp = () => {
-  const now = new Date();
-  return `${now.toISOString().slice(0, 10)} ${now.toTimeString().slice(0, 8)}`;
+export const gitRemotes = settings.gitRemotes;
+
+const isDirectRun = (importMetaUrl = ``) => {
+  const hasArgvPath = typeof process.argv[1] === `string` && process.argv[1].trim() !== ``;
+  const currentModulePath = fileURLToPath(importMetaUrl);
+  const executedModulePath = hasArgvPath ? path.resolve(process.argv[1]) : ``;
+  const isSamePath = hasArgvPath && path.resolve(currentModulePath) === executedModulePath;
+  const result = isSamePath;
+
+  return result;
 };
-const execSilent = (cmd) => {
+
+export const getTimestamp = () => {
+  const now = new Date();
+  const result = `${now.toISOString().slice(0, 10)} ${now.toTimeString().slice(0, 8)}`;
+
+  return result;
+};
+
+export const execSilent = (cmd = ``) => {
+  let result = false;
+
   try {
-    execSync(cmd, { stdio: `pipe` });
-    return true;
+    execSync(cmd, { "stdio": `pipe` });
+    result = true;
   }
   catch {
-    return false;
+    result = false;
   }
+
+  return result;
 };
-const execOutput = (cmd) => {
+
+export const execOutput = (cmd = ``) => {
+  let result = ``;
+
   try {
-    return execSync(cmd, {
-      encoding: `utf8`,
-      stdio: `pipe`,
+    result = execSync(cmd, {
+      "encoding": `utf8`,
+      "stdio": `pipe`,
     }).trim();
   }
   catch {
-    return ``;
+    result = ``;
+  }
+
+  return result;
+};
+
+const purgeRemoteRefs = (remoteName = ``) => {
+  if (!remoteName) {
+    return;
+  }
+
+  let purged = false;
+  const refsDir = path.join(`.git`, `refs`, `remotes`, remoteName);
+
+  if (fs.existsSync(refsDir)) {
+    try {
+      fs.rmSync(refsDir, { "recursive": true, "force": true });
+      fs.mkdirSync(refsDir, { "recursive": true });
+      purged = true;
+    }
+    catch (error) {
+      logger(`warn`, `loose refs 정리 실패 (${remoteName}): ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  const packedRefsPath = path.join(`.git`, `packed-refs`);
+  if (fs.existsSync(packedRefsPath)) {
+    try {
+      const content = fs.readFileSync(packedRefsPath, `utf8`);
+      const prefix = `refs/remotes/${remoteName}/`;
+      const hasEntries = content.includes(prefix);
+
+      if (hasEntries) {
+        const cleaned = content
+          .split(/\n/)
+          .filter((line) => !line.includes(prefix))
+          .join(`\n`);
+        fs.writeFileSync(packedRefsPath, cleaned, `utf8`);
+        purged = true;
+      }
+    }
+    catch (error) {
+      logger(`warn`, `packed-refs 정리 실패 (${remoteName}): ${error instanceof Error ? error.message : String(error)}`);
+    }
+  }
+
+  if (purged) {
+    logger(`info`, `remote tracking refs 정리 완료: ${remoteName}`);
   }
 };
 
-// 3. 원격 저장소 유틸 -----------------------------------------------------------------------
-const remoteUtils = {
-  getSettings: (remoteName = ``) => (remoteName === settings.git.remotes.public.name ? settings.git.remotes.public
-      : remoteName === settings.git.remotes.private.name ? settings.git.remotes.private
+export const safeFetch = (remoteName = ``, options = ``, stdio = `pipe`) => {
+  const cmd = `git fetch ${remoteName} ${options}`.trim();
+  let result = false;
+
+  try {
+    execSync(cmd, { "stdio": stdio });
+    result = true;
+  }
+  catch {
+    logger(`warn`, `fetch 실패 - remote tracking refs 복구 후 재시도: ${remoteName}`);
+    purgeRemoteRefs(remoteName);
+
+    try {
+      execSync(cmd, { "stdio": stdio });
+      logger(`success`, `fetch 재시도 성공: ${remoteName}`);
+      result = true;
+    }
+    catch (error) {
+      logger(`error`, `fetch 재시도 실패 (${remoteName}): ${error instanceof Error ? error.message : String(error)}`);
+      result = false;
+    }
+  }
+
+  return result;
+};
+
+export const remoteUtils = {
+  "getSettings": (remoteName = ``) => (remoteName === gitRemotes.public.name ? gitRemotes.public
+      : remoteName === gitRemotes.private.name ? gitRemotes.private
         : null),
 
-  getBranch: (remoteName = ``) => remoteUtils.getSettings(remoteName)?.branch || null,
+  "getBranch": (remoteName = ``) => remoteUtils.getSettings(remoteName)?.branch || null,
 
-  exists: (remoteName = ``) => execSilent(`git remote get-url ${remoteName}`),
+  "exists": (remoteName = ``) => execSilent(`git remote get-url ${remoteName}`),
 
-  branchExists: (remoteName = ``, branchName = ``) => execSilent(`git ls-remote --exit-code --heads ${remoteName} ${branchName}`),
+  "branchExists": (remoteName = ``, branchName = ``) => execSilent(`git ls-remote --exit-code --heads ${remoteName} ${branchName}`),
 
-  hasLocalBranch: (branch = ``) => (branch ? execSilent(`git show-ref --verify --quiet refs/heads/${branch}`) : false),
+  "hasLocalBranch": (branch = ``) => (branch ? execSilent(`git show-ref --verify --quiet refs/heads/${branch}`) : false),
 
-  ensureLocalFromRemote: function(branch = ``, remoteName = ``) {
+  "ensureLocalFromRemote": function(branch = ``, remoteName = ``) {
     const canProceed = branch && remoteName && remoteUtils.exists(remoteName);
-    if (!canProceed) {
-      return false;
+    let result = false;
+
+    if (canProceed) {
+      const fetchOk = safeFetch(remoteName, `--prune`);
+      if (fetchOk) {
+        result = execSilent(`git fetch ${remoteName} ${branch}`)
+          && execSilent(`git checkout -B ${branch} FETCH_HEAD`);
+      }
     }
 
-    const fetchOk = execSilent(`git fetch ${remoteName} --prune`);
-    const checkoutOk = fetchOk && execSilent(`git checkout -B ${branch} ${remoteName}/${branch}`);
-    return checkoutOk;
+    return result;
   },
 };
 
-// 4. 브랜치 관리 ----------------------------------------------------------------------------
-// 4-1. 기본브랜치 설정
 const setDefaultBranches = () => {
   const remoteNames = [
-    settings.git.remotes.public.name,
-    settings.git.remotes.private.name,
+    gitRemotes.public.name,
+    gitRemotes.private.name,
   ];
 
   remoteNames.forEach((remoteName) => {
@@ -125,11 +217,14 @@ const setDefaultBranches = () => {
       , owner,
       repo,
     ] = match;
+
     try {
-      execSync(`gh api repos/${owner}/${repo} -X PATCH -f default_branch=${targetBranch}`, { stdio: `pipe` });
+      execSync(`gh api repos/${owner}/${repo} -X PATCH -f default_branch=${targetBranch}`, { "stdio": `pipe` });
       logger(`success`, `GitHub default branch 변경 완료: ${targetBranch}`);
 
-      if (!targetBranch.endsWith(`main`)) {
+      const shouldDeleteLegacyMain = remoteName === gitRemotes.public.name
+        && targetBranch !== `main`;
+      if (shouldDeleteLegacyMain) {
         execSilent(`git push ${remoteName} --delete main`)
           ? logger(`success`, `원격 'main' 브랜치 삭제 완료: ${remoteName}`)
           : logger(`info`, `원격 'main' 브랜치 없음 또는 이미 삭제됨`);
@@ -141,14 +236,13 @@ const setDefaultBranches = () => {
   });
 };
 
-// 4-2. 브랜치 정리
 const cleanupBranches = () => {
   logger(`info`, `불필요한 브랜치 정리 시작`);
 
   const uniqueDefaults = [
     ...new Set([
-      remoteUtils.getBranch(settings.git.remotes.public.name),
-      remoteUtils.getBranch(settings.git.remotes.private.name),
+      remoteUtils.getBranch(gitRemotes.public.name),
+      remoteUtils.getBranch(gitRemotes.private.name),
     ].filter(Boolean)),
   ];
 
@@ -158,17 +252,17 @@ const cleanupBranches = () => {
   }
 
   cleanupLocalBranches(uniqueDefaults);
-  cleanupRemoteBranches(uniqueDefaults);
+  cleanupRemoteBranches();
   logger(`success`, `브랜치 정리 완료`);
 };
 
 const cleanupLocalBranches = (uniqueDefaults = []) => {
   const localBranches = execOutput(`git branch --list`)
-  .split(/\r?\n/)
-  .map((b) => b.replace(/^\*?\s*/, ``).trim())
-  .filter(Boolean);
+    .split(/\r?\n/)
+    .map((branch) => branch.replace(/^\*?\s*/, ``).trim())
+    .filter(Boolean);
+  const localToDelete = localBranches.filter((branch) => !uniqueDefaults.includes(branch));
 
-  const localToDelete = localBranches.filter((b) => !uniqueDefaults.includes(b));
   if (localToDelete.length === 0) {
     return;
   }
@@ -176,17 +270,19 @@ const cleanupLocalBranches = (uniqueDefaults = []) => {
   const currentBranch = execOutput(`git branch --show-current`);
   if (!uniqueDefaults.includes(currentBranch)) {
     const switchTo = String(uniqueDefaults[0] || ``);
-    switchTo && switchToDefaultBranch(switchTo);
+    if (switchTo) {
+      switchToDefaultBranch(switchTo);
+    }
   }
 
   const afterBranch = execOutput(`git branch --show-current`);
   localToDelete
-  .filter((b) => b !== afterBranch)
-  .forEach((branch) => {
+    .filter((branch) => branch !== afterBranch)
+    .forEach((branch) => {
       execSilent(`git branch -D ${branch}`)
         ? logger(`success`, `로컬 브랜치 삭제 완료: ${branch}`)
         : logger(`warn`, `로컬 브랜치 삭제 실패: ${branch}`);
-  });
+    });
 };
 
 const switchToDefaultBranch = (switchTo = ``) => {
@@ -195,18 +291,18 @@ const switchToDefaultBranch = (switchTo = ``) => {
     return;
   }
 
-  const created = remoteUtils.ensureLocalFromRemote(switchTo, settings.git.remotes.private.name)
-    || remoteUtils.ensureLocalFromRemote(switchTo, settings.git.remotes.public.name);
+  const created = remoteUtils.ensureLocalFromRemote(switchTo, gitRemotes.private.name)
+    || remoteUtils.ensureLocalFromRemote(switchTo, gitRemotes.public.name);
 
   created
     ? logger(`info`, `로컬 기본브랜치 생성/전환 완료: ${switchTo}`)
     : logger(`warn`, `로컬 기본브랜치 생성/전환 실패: ${switchTo}`);
 };
 
-const cleanupRemoteBranches = (uniqueDefaults = []) => {
+const cleanupRemoteBranches = () => {
   const remoteNames = [
-    settings.git.remotes.public.name,
-    settings.git.remotes.private.name,
+    gitRemotes.public.name,
+    gitRemotes.private.name,
   ];
 
   remoteNames.forEach((remoteName) => {
@@ -215,40 +311,53 @@ const cleanupRemoteBranches = (uniqueDefaults = []) => {
       return;
     }
 
+    if (remoteName === gitRemotes.private.name) {
+      logger(`info`, `Remote '${remoteName}' 원격 브랜치 삭제 건너뜀 (private 보호)`);
+      return;
+    }
+
     const targetBranch = remoteUtils.getBranch(remoteName);
     if (!targetBranch) {
       return;
     }
 
-    execSilent(`git fetch ${remoteName} --prune`) || logger(`warn`, `${remoteName} fetch 실패`);
+    const fetchOk = safeFetch(remoteName, `--prune`);
+    if (!fetchOk) {
+      logger(`warn`, `${remoteName} fetch 실패 - 원격 브랜치 정리 건너뜀`);
+      return;
+    }
 
     const remoteBranches = execOutput(`git branch -r --list "${remoteName}/*"`)
-    .split(/\r?\n/)
-    .map((b) => b.trim())
-    .filter((b) => b && !b.includes(`HEAD`))
-    .map((b) => b.replace(`${remoteName}/`, ``));
+      .split(/\r?\n/)
+      .map((branch) => branch.trim())
+      .filter((branch) => branch && !branch.includes(`HEAD`))
+      .map((branch) => branch.replace(`${remoteName}/`, ``));
 
     remoteBranches
-    .filter((b) => b !== targetBranch)
-    .forEach((branch) => {
+      .filter((branch) => branch !== targetBranch)
+      .forEach((branch) => {
         execSilent(`git push ${remoteName} --delete ${branch}`)
           ? logger(`success`, `원격 브랜치 삭제 완료: ${remoteName}/${branch}`)
           : logger(`warn`, `원격 브랜치 삭제 실패: ${remoteName}/${branch}`);
-    });
+      });
   });
 };
 
-const manageBranches = (mode = ``) => {
-  mode === `setDefault` && setDefaultBranches();
-  mode === `cleanup` && cleanupBranches();
+export const manageBranches = (mode = ``) => {
+  if (mode === `setDefault`) {
+    setDefaultBranches();
+  }
+
+  if (mode === `cleanup`) {
+    cleanupBranches();
+  }
 };
 
-// 5. Git LFS 설정 ---------------------------------------------------------------------------
-const ensureGitLfs = () => {
+export const ensureGitLfs = () => {
   logger(`info`, `Git LFS 강제 설정 시작`);
 
   try {
-    execSync(`git lfs install --force`, { stdio: `pipe` });
+    execSync(`git lfs install --force`, { "stdio": `pipe` });
     logger(`success`, `Git LFS 설치/초기화 완료`);
   }
   catch (error) {
@@ -278,11 +387,9 @@ const updateGitattributes = () => {
     `*.ai filter=lfs diff=lfs merge=lfs -text`,
     `*.vsix filter=lfs diff=lfs merge=lfs -text`,
   ];
-
   const existingContent = fileExists(gitattributesPath) ? fs.readFileSync(gitattributesPath, `utf8`) : ``;
-  const existingLines = new Set(existingContent.split(/\r?\n/).map((l) => l.trim())
-  .filter(Boolean));
-  const missingPatterns = lfsPatterns.filter((p) => !existingLines.has(p));
+  const existingLines = new Set(existingContent.split(/\r?\n/).map((line) => line.trim()).filter(Boolean));
+  const missingPatterns = lfsPatterns.filter((pattern) => !existingLines.has(pattern));
 
   if (missingPatterns.length === 0) {
     logger(`info`, `.gitattributes LFS 패턴 이미 설정됨`);
@@ -291,6 +398,7 @@ const updateGitattributes = () => {
 
   const separator = existingContent.trim() ? os.EOL : ``;
   const newContent = existingContent.trim() + separator + missingPatterns.join(os.EOL) + os.EOL;
+
   fs.writeFileSync(gitattributesPath, newContent, `utf8`);
   logger(`success`, `.gitattributes LFS 패턴 추가 완료: ${missingPatterns.length}개`);
 };
@@ -298,56 +406,80 @@ const updateGitattributes = () => {
 const logLfsStatus = () => {
   const trackedFiles = execOutput(`git lfs ls-files`);
   const count = trackedFiles ? trackedFiles.split(/\r?\n/).length : 0;
+
   logger(`info`, trackedFiles ? `LFS 추적 파일 존재: ${count}개` : `LFS 추적 파일 없음`);
 };
 
-// 6. 환경변수 파일 관리 ---------------------------------------------------------------------
-const envManager = {
-  upsertLine: function(content = ``, key = ``, value = ``) {
+export const envManager = {
+  "upsertLine": function(content = ``, key = ``, value = ``) {
     const lines = content.split(/\r?\n/);
     const rx = new RegExp(`^\\s*${key}\\s*=`, `i`);
     const idx = lines.findIndex((line) => rx.test(line));
     const nextLine = `${key}=${value}`;
+    const result = idx >= 0
+      ? (() => {
+        lines[idx] = nextLine;
+        return lines.join(os.EOL);
+      })()
+      : (() => {
+        lines.push(nextLine);
+        return lines.join(os.EOL);
+      })();
 
-    idx >= 0 ? lines[idx] = nextLine : lines.push(nextLine);
-    return lines.join(os.EOL);
+    return result;
   },
 
-  findLine: function(content = ``, key = ``) {
+  "findLine": function(content = ``, key = ``) {
     const lines = content.split(/\r?\n/);
     const rx = new RegExp(`^\\s*${key}\\s*=`, `i`);
     const idx = lines.findIndex((line) => rx.test(line));
-    return {
-      idx: idx,
-      line: idx >= 0 ? lines[idx] : null,
+    const result = {
+      "idx": idx,
+      "line": idx >= 0 ? lines[idx] : null,
     };
+
+    return result;
   },
 
-  readBackup: function() {
+  "readBackup": function() {
+    let result = null;
+
     try {
       const parsed = JSON.parse(fs.readFileSync(BACKUP_PATH, `utf8`));
-      return parsed && typeof parsed === `object` ? parsed : null;
+      result = parsed && typeof parsed === `object` ? parsed : null;
     }
     catch {
-      return null;
+      result = null;
     }
+
+    return result;
   },
 
-  writeBackup: function(payload) {
+  "writeBackup": function(payload) {
+    let result = false;
+
     try {
-      fs.mkdirSync(BACKUP_DIR, { recursive: true });
+      fs.mkdirSync(BACKUP_DIR, { "recursive": true });
       fs.writeFileSync(BACKUP_PATH, `${JSON.stringify(payload, null, 2)}\n`, `utf8`);
-      return true;
+      result = true;
     }
     catch {
-      return false;
+      result = false;
     }
+
+    return result;
   },
 
-  cleanupBackup: function() {
+  "cleanupBackup": function() {
     try {
-      fs.existsSync(BACKUP_PATH) && fs.unlinkSync(BACKUP_PATH);
-      fs.existsSync(BACKUP_DIR) && fs.readdirSync(BACKUP_DIR).length === 0 && fs.rmdirSync(BACKUP_DIR);
+      if (fs.existsSync(BACKUP_PATH)) {
+        fs.unlinkSync(BACKUP_PATH);
+      }
+
+      if (fs.existsSync(BACKUP_DIR) && fs.readdirSync(BACKUP_DIR).length === 0) {
+        fs.rmdirSync(BACKUP_DIR);
+      }
+
       logger(`info`, `백업 정리 완료: ${BACKUP_PATH}`);
     }
     catch {
@@ -355,13 +487,13 @@ const envManager = {
     }
   },
 
-  syncFiles: function() {
+  "syncFiles": function() {
     syncEnvFile(`.env.development`, `DEVELOPMENT`);
     syncEnvFile(`.env.production`, `PRODUCTION`);
     logger(`info`, `.env.development/.env.production 동기화 완료`);
   },
 
-  modify: function() {
+  "modify": function() {
     if (!fileExists(`.env`)) {
       logger(`info`, `.env 파일 없음 - GLOBAL_ENV 수정 건너뜀`);
       return;
@@ -372,19 +504,21 @@ const envManager = {
     const backup = envManager.readBackup() ?? {};
     const nextBackup = {
       ...backup,
-      updatedAt: new Date().toISOString(),
-      env: backup.env ?? {},
+      "updatedAt": new Date().toISOString(),
+      "env": backup.env ?? {},
     };
-
     const found = envManager.findLine(envContent, `GLOBAL_ENV`);
-    found.line && (nextBackup.env.GLOBAL_ENV = found.line);
-    envManager.writeBackup(nextBackup);
 
+    if (found.line) {
+      nextBackup.env.GLOBAL_ENV = found.line;
+    }
+
+    envManager.writeBackup(nextBackup);
     fs.writeFileSync(`.env`, envManager.upsertLine(envContent, `GLOBAL_ENV`, `PRODUCTION`), `utf8`);
     logger(`info`, `.env 파일 수정 완료`);
   },
 
-  restore: function() {
+  "restore": function() {
     if (!fileExists(`.env`)) {
       logger(`info`, `.env 파일 없음 - GLOBAL_ENV 복원 건너뜀`);
       return;
@@ -394,13 +528,18 @@ const envManager = {
     const envContent = fs.readFileSync(`.env`, `utf8`);
     const backup = envManager.readBackup();
     const hasBackup = Boolean(backup?.env?.GLOBAL_ENV);
+    const restored = hasBackup
+      ? (() => {
+        const lines = envContent.split(/\r?\n/);
+        const { idx } = envManager.findLine(envContent, `GLOBAL_ENV`);
 
-    const restored = hasBackup ? (() => {
-      const lines = envContent.split(/\r?\n/);
-      const { idx } = envManager.findLine(envContent, `GLOBAL_ENV`);
-      idx >= 0 && (lines[idx] = backup.env.GLOBAL_ENV);
-      return lines.join(os.EOL);
-    })() : envManager.upsertLine(envContent, `GLOBAL_ENV`, `DEVELOPMENT`);
+        if (idx >= 0) {
+          lines[idx] = backup.env.GLOBAL_ENV;
+        }
+
+        return lines.join(os.EOL);
+      })()
+      : envManager.upsertLine(envContent, `GLOBAL_ENV`, `DEVELOPMENT`);
 
     fs.writeFileSync(`.env`, restored, `utf8`);
     logger(`info`, `.env 파일 복원 완료`);
@@ -417,11 +556,9 @@ const syncEnvFile = (filePath = ``, mode = ``) => {
 
   const content = fs.readFileSync(abs, `utf8`);
   const isProd = mode === `PRODUCTION`;
-
   const clientUrl = isProd
     ? `https://www.${env.domain}/${env.projectName}`
     : `http://localhost:${env.localPort.client}/${env.projectName}`;
-
   const callbackUrl = isProd
     ? `https://www.${env.domain}/${env.projectName}/${env.gcp.callback}`
     : `http://localhost:${env.localPort.server}/${env.projectName}/${env.gcp.callback}`;
@@ -433,8 +570,7 @@ const syncEnvFile = (filePath = ``, mode = ``) => {
   fs.writeFileSync(abs, next, `utf8`);
 };
 
-// 7. 버전 및 Changelog 업데이트 -------------------------------------------------------------
-const updateVersionAndChangelog = (msg = ``) => {
+export const updateVersionAndChangelog = (msg = ``) => {
   if (!fileExists(`changelog.md`)) {
     return;
   }
@@ -443,11 +579,10 @@ const updateVersionAndChangelog = (msg = ``) => {
   const changelog = fs.readFileSync(`changelog.md`, `utf8`);
   const newVersion = calculateNextVersion(changelog);
   const entryContent = msg || generateChangelogEntry();
-
   const updatedChangelog = `${changelog}\n## \\[ ${newVersion} \\]\n\n${msg ? `- ${msg}` : entryContent}\n`;
+
   fs.writeFileSync(`changelog.md`, updatedChangelog, `utf8`);
   logger(`success`, `changelog.md 업데이트 완료: ${newVersion}`);
-
   updatePackageVersion(newVersion);
 };
 
@@ -457,8 +592,15 @@ const calculateNextVersion = (changelog = ``) => {
   const ver = lastVersion.split(`.`).map(Number);
 
   ver[2]++;
-  ver[2] >= 10 && (ver[2] = 0, ver[1]++);
-  ver[1] >= 10 && (ver[1] = 0, ver[0]++);
+  if (ver[2] >= 10) {
+    ver[2] = 0;
+    ver[1]++;
+  }
+
+  if (ver[1] >= 10) {
+    ver[1] = 0;
+    ver[0]++;
+  }
 
   return ver.join(`.`);
 };
@@ -466,21 +608,22 @@ const calculateNextVersion = (changelog = ``) => {
 const generateChangelogEntry = () => {
   const now = new Date();
   const dateStr = now.toLocaleDateString(`ko-KR`, {
-    year: `numeric`,
-    month: `2-digit`,
-    day: `2-digit`,
+    "year": `numeric`,
+    "month": `2-digit`,
+    "day": `2-digit`,
   });
   const timeStr = now.toLocaleTimeString(`ko-KR`, {
-    hour: `2-digit`,
-    minute: `2-digit`,
-    second: `2-digit`,
-    hour12: false,
+    "hour": `2-digit`,
+    "minute": `2-digit`,
+    "second": `2-digit`,
+    "hour12": false,
   });
+  const result = `- ${dateStr} (${timeStr})`
+    .replaceAll(/(\.\s*\()/g, ` (`)
+    .replaceAll(/(\.\s*)/g, `-`)
+    .replaceAll(/\((\W*)(\s*)/g, `(`);
 
-  return `- ${dateStr} (${timeStr})`
-  .replaceAll(/(\.\s*\()/g, ` (`)
-  .replaceAll(/(\.\s*)/g, `-`)
-  .replaceAll(/\((\W*)(\s*)/g, `(`);
+  return result;
 };
 
 const updatePackageVersion = (newVersion = ``) => {
@@ -490,141 +633,66 @@ const updatePackageVersion = (newVersion = ``) => {
 
   logger(`info`, `package.json 버전 업데이트 시작: ${newVersion}`);
   const pkg = JSON.parse(fs.readFileSync(`package.json`, `utf8`));
+
   pkg.version = newVersion;
   fs.writeFileSync(`package.json`, `${JSON.stringify(pkg, null, 2)}\n`, `utf8`);
   logger(`success`, `package.json 버전 업데이트 완료: ${newVersion}`);
 };
 
-// 8. Git Fetch ------------------------------------------------------------------------------
-const gitFetch = () => {
-  const privateExists = remoteUtils.exists(settings.git.remotes.private.name);
-  const publicExists = remoteUtils.exists(settings.git.remotes.public.name);
-
-  if (!privateExists && !publicExists) {
-    logger(`warn`, `사용 가능한 remote가 없습니다 - fetch/reset 스킵`);
+export const overwritePackageDefaultScripts = () => {
+  if (!fileExists(`package.json`)) {
+    logger(`info`, `package.json 없음 - 기본 scripts 덮어쓰기 건너뜀`);
     return;
   }
 
-  const targetRemote = privateExists ? settings.git.remotes.private.name : settings.git.remotes.public.name;
-  const targetBranch = remoteUtils.getBranch(targetRemote);
+  const defaultScripts = settings?.packageJsonScripts;
+  const canSync = defaultScripts
+    && typeof defaultScripts === `object`
+    && Object.keys(defaultScripts).length > 0;
 
-  if (!targetBranch) {
-    logger(`warn`, `원격 기본브랜치를 찾을 수 없습니다 - fetch/reset 스킵`);
+  if (!canSync) {
+    logger(`info`, `settings.packageJsonScripts 설정 없음 - 기본 scripts 덮어쓰기 건너뜀`);
     return;
   }
 
   try {
-    const fullRef = `${targetRemote}/${targetBranch}`;
+    const pkg = JSON.parse(fs.readFileSync(`package.json`, `utf8`));
+    const currentScripts = pkg?.scripts && typeof pkg.scripts === `object`
+      ? pkg.scripts
+      : {};
+    const nextScripts = {
+      ...defaultScripts,
+    };
+    const hasSameScriptCount = Object.keys(currentScripts).length === Object.keys(nextScripts).length;
+    let hasChanged = !hasSameScriptCount;
 
-    logger(`info`, `Git Fetch 시작: ${targetRemote}`);
-    execSync(`git fetch ${targetRemote}`, { stdio: `inherit` });
-    logger(`success`, `Git Fetch 완료: ${targetRemote}`);
+    if (!hasChanged) {
+      Object.entries(nextScripts).forEach(([
+        key,
+        value,
+      ]) => {
+        if (currentScripts[key] !== value) {
+          hasChanged = true;
+        }
+      });
+    }
 
-    logger(`info`, `Git Reset Hard 시작: ${fullRef}`);
-    execSync(`git reset --hard ${fullRef}`, { stdio: `inherit` });
-    logger(`success`, `Git Reset Hard 완료: ${fullRef}`);
+    if (!hasChanged) {
+      logger(`info`, `package.json 기본 scripts 이미 최신 상태`);
+      return;
+    }
+
+    pkg.scripts = nextScripts;
+    fs.writeFileSync(`package.json`, `${JSON.stringify(pkg, null, 2)}\n`, `utf8`);
+    logger(`success`, `package.json 기본 scripts 초기화 후 덮어쓰기 완료`);
   }
   catch (error) {
-    logger(`error`, `Git Fetch/Reset 실패: ${error instanceof Error ? error.message : String(error)}`);
+    logger(`error`, `package.json 기본 scripts 덮어쓰기 실패: ${error instanceof Error ? error.message : String(error)}`);
     throw error;
   }
 };
 
-// 9. Git Push -------------------------------------------------------------------------------
-const gitPush = (remoteName = ``, ignoreFilePath = ``, msg = ``, baseCommit = ``) => {
-  if (!remoteUtils.exists(remoteName)) {
-    logger(`info`, `Remote '${remoteName}' 존재하지 않음 - 건너뜀`);
-    return;
-  }
-
-  const targetBranch = remoteUtils.getBranch(remoteName);
-  if (!targetBranch) {
-    logger(`warn`, `원격 기본브랜치를 찾을 수 없습니다: ${remoteName} - push 스킵`);
-    return;
-  }
-
-  const fullRef = `${remoteName}/${targetBranch}`;
-  logger(`info`, `Git Push 시작: ${remoteName} (${fullRef})`);
-
-  // 베이스 커밋으로 리셋 (각 push마다 독립적인 커밋 생성)
-  if (baseCommit) {
-    logger(`info`, `베이스 커밋으로 리셋: ${baseCommit}`);
-    execSync(`git reset --hard ${baseCommit}`, { stdio: `pipe` });
-  }
-
-  const ignorePublicFile = fs.readFileSync(`.gitignore.public`, `utf8`);
-  const ignoreContent = fs.readFileSync(ignoreFilePath, `utf8`);
-
-  logger(`info`, `.gitignore 파일 수정 적용: ${ignoreFilePath}`);
-  fs.writeFileSync(`.gitignore`, ignoreContent, `utf8`);
-
-  // git cache 초기화
-  execSync(`git rm -r -f --cached .`, { stdio: `inherit` });
-  execSync(`git add .`, { stdio: `inherit` });
-
-  const statusOutput = execOutput(`git status --porcelain`);
-  if (statusOutput) {
-    logger(`info`, `변경사항 감지 - 커밋 진행`);
-    const tempFile = `.git-commit-msg.tmp`;
-    const commitContent = msg || getTimestamp();
-    fs.writeFileSync(tempFile, commitContent, `utf8`);
-    execSync(`git commit -F "${tempFile}"`, { stdio: `inherit` });
-    fs.unlinkSync(tempFile);
-    logger(`success`, `커밋 완료`);
-  }
-  else {
-    logger(`info`, `변경사항 없음 - 커밋 건너뜀`);
-  }
-
-  logger(`info`, `Push 진행: ${fullRef}`);
-  execSync(`git push --force ${remoteName} HEAD:${targetBranch}`, { stdio: `inherit` });
-  logger(`success`, `Push 완료: ${fullRef}`);
-
-  fs.writeFileSync(`.gitignore`, ignorePublicFile, `utf8`);
-  logger(`info`, `.gitignore 파일 복원`);
-};
-
-// 10. Push 프로세스 실행 --------------------------------------------------------------------
-const runPushProcess = async () => {
-  // --n 인 경우에만 입력을 스킵하고 자동 커밋
-  // --y 옵션(입력 모드)이거나 옵션이 없는 경우(기본 모드)에는 프롬프트 띄움
-  const skipPrompt = args3.includes(`n`);
-
-  const commitMsg = skipPrompt
-    ? ``
-    : await runPrompt(`커밋 메시지 입력 (빈값 = 날짜/시간): `);
-
-  logger(`info`, `커밋 메시지: ${commitMsg || `auto (date/time)`}`);
-
-  ensureGitLfs();
-  envManager.syncFiles();
-  updateVersionAndChangelog(commitMsg);
-
-  // 버전 업데이트 후 현재 상태를 임시 커밋으로 저장
-  execSync(`git add .`, { stdio: `pipe` });
-  const hasChanges = execOutput(`git status --porcelain`);
-  if (hasChanges) {
-    const prePushMsg = `${getTimestamp()} pre-push`;
-    execSync(`git commit -m "${prePushMsg}"`, { stdio: `pipe` });
-  }
-
-  const baseCommit = execOutput(`git rev-parse HEAD`);
-  logger(`info`, `베이스 커밋 저장: ${baseCommit.slice(0, 7)}`);
-
-  envManager.modify();
-  try {
-    gitPush(settings.git.remotes.public.name, `.gitignore.public`, commitMsg, baseCommit);
-    gitPush(settings.git.remotes.private.name, `.gitignore.private`, commitMsg, baseCommit);
-    logger(`success`, `Git Push 완료`);
-  }
-  finally {
-    envManager.restore();
-    envManager.cleanupBackup();
-  }
-};
-
-// 11. 메인 실행 -----------------------------------------------------------------------------
-(async () => {
+const main = async () => {
   try {
     logger(`info`, `스크립트 실행: ${TITLE}`);
     logger(`info`, `전달된 인자 1: ${args1 || `none`}`);
@@ -638,16 +706,13 @@ const runPushProcess = async () => {
 
   try {
     if (args2 === `fetch`) {
-      ensureGitLfs();
-      manageBranches(`setDefault`);
-      manageBranches(`cleanup`);
-      gitFetch();
+      const { runFetchAction } = await import(`./fetch.mjs`);
+      await runFetchAction();
     }
 
     if (args2 === `push`) {
-      await runPushProcess(); // await를 통해 프롬프트 입력 및 프로세스 완료 대기
-      manageBranches(`setDefault`);
-      manageBranches(`cleanup`);
+      const { runPushAction } = await import(`./push.mjs`);
+      await runPushAction({ "skipPrompt": args3 === `n` });
     }
 
     logger(`info`, `스크립트 정상 종료: ${TITLE}`);
@@ -658,4 +723,8 @@ const runPushProcess = async () => {
     logger(`error`, `${TITLE} 스크립트 실행 실패: ${errMsg}`);
     process.exit(1);
   }
-})();
+};
+
+if (isDirectRun(import.meta.url)) {
+  await main();
+}

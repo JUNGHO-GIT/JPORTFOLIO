@@ -48,14 +48,12 @@
     "whatwg-url": "12.0.1"
   },
   "scripts": {
-    "sync": "bun .node/mjs/sync.mjs --bun --sync --client",
-    "start": "bun .node/mjs/swc.mjs --bun --start --client",
-    "build": "bun .node/mjs/swc.mjs --bun --build --client",
-    "fix": "bun .node/mjs/fix.mjs --bun --fix",
-    "reset": "bun .node/mjs/reset.mjs --bun --reset",
-    "gcloud": "bun .node/mjs/gcloud.mjs --bun --client",
-    "git-push-y": "bun .node/mjs/git.mjs --bun --push --y",
-    "git-push-n": "bun .node/mjs/git.mjs --bun --push --n"
+    "app": "bun run .node/mjs/shared.mjs --app",
+    "git": "bun run .node/mjs/shared.mjs --git",
+    "ps1": "bun run .node/mjs/shared.mjs --ps1",
+    "tools": "bun run .node/mjs/shared.mjs --tools",
+    "config": "bun run .node/mjs/shared.mjs --config",
+    "release": "bun run .node/mjs/shared.mjs --release"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

@@ -133,7 +133,7 @@ export const validateDir = (list = []) => {
   const isArr = Array.isArray(list);
   const found = isArr ? list.find((name) => fs.existsSync(path.join(process.cwd(), name))) : null;
 
-	found ? logger(`info`, `유효한 디���터리 발견: ${found}`) : logger(`warn`, `유효한 디렉터리 없음: ${list.join(`, `)}`);
+	found ? logger(`info`, `유효한 디렉터리 발견: ${found}`) : logger(`warn`, `유효한 디렉터리 없음: ${list.join(`, `)}`);
 
 	const result = found ?? (isArr ? list[0] : null);
 	return result;
