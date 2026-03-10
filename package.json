@@ -1,6 +1,6 @@
 {
   "name": "jportfolio-server",
-  "version": "1.4.7",
+  "version": "1.4.8",
   "private": true,
   "type": "module",
   "main": "index.ts",
@@ -37,23 +37,12 @@
     "whatwg-url": "12.0.1"
   },
   "scripts": {
-    "sync": "bun .node/mjs/sync.mjs --bun --sync --server",
-    "start": "bun .node/mjs/swc.mjs --bun --start --server",
-    "build": "bun .node/mjs/swc.mjs --bun --build --server",
-    "fix": "bun .node/mjs/fix.mjs --bun --fix",
-    "sort": "bun .node/mjs/sort.mjs --bun --sort",
-    "selected": "node .node/mjs/selected.mjs --bun --selected",
-    "reset": "bun .node/mjs/reset.mjs --bun --reset",
-    "remove": "bun .node/mjs/remove.mjs --bun --remove",
-    "vsce": "bun .node/mjs/vsce.mjs --bun --package",
-    "gcloud": "bun .node/mjs/gcloud.mjs --bun --server",
-    "git-fetch": "bun .node/mjs/git.mjs --bun --fetch",
-    "git-push-msg-y": "bun .node/mjs/git.mjs --bun --push --y",
-    "git-push-msg-n": "bun .node/mjs/git.mjs --bun --push --n",
-    "fs:ai-to-local": "bun .node/mjs/ai-config.mjs to-local",
-    "fs:ai-to-jnode": "bun .node/mjs/ai-config.mjs to-jnode",
-    "fs:vscode-to-local": "bun .node/mjs/vscode-config.mjs to-local",
-    "fs:vscode-to-jnode": "bun .node/mjs/vscode-config.mjs to-jnode"
+    "app": "bun run .node/mjs/shared.mjs --app",
+    "git": "bun run .node/mjs/shared.mjs --git",
+    "ps1": "bun run .node/mjs/shared.mjs --ps1",
+    "tools": "bun run .node/mjs/shared.mjs --tools",
+    "config": "bun run .node/mjs/shared.mjs --config",
+    "release": "bun run .node/mjs/shared.mjs --release"
   },
   "dependencies": {
     "@google-cloud/storage": "^7.19.0",
