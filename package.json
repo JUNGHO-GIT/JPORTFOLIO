@@ -1,6 +1,6 @@
 {
   "name": "jportfolio-server",
-  "version": "1.4.8",
+  "version": "1.4.9",
   "private": true,
   "type": "module",
   "main": "index.ts",
@@ -37,12 +37,11 @@
     "whatwg-url": "12.0.1"
   },
   "scripts": {
-    "app": "bun run .node/mjs/shared.mjs --app",
-    "git": "bun run .node/mjs/shared.mjs --git",
-    "ps1": "bun run .node/mjs/shared.mjs --ps1",
-    "tools": "bun run .node/mjs/shared.mjs --tools",
-    "config": "bun run .node/mjs/shared.mjs --config",
-    "release": "bun run .node/mjs/shared.mjs --release"
+    "project": "bun .node/bootstrap-sync.mjs --project",
+    "git": "bun .node/bootstrap-sync.mjs --git",
+    "ps1": "bun .node/bootstrap-sync.mjs --ps1",
+    "tools": "bun .node/bootstrap-sync.mjs --tools",
+    "sync": "bun .node/bootstrap-sync.mjs --sync"
   },
   "dependencies": {
     "@google-cloud/storage": "^7.19.0",

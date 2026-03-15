@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "status": "success",
+  "updatedAt": "2026-03-15T16:47:15.908Z",
+  "startedAt": "2026-03-15T16:46:53.314Z",
+  "endedAt": "2026-03-15T16:47:15.907Z",
+  "selectedCandidate": "public/mjs/remote/shared.mjs",
+  "exitCode": 0,
+  "lastRunArgs": [
+    "--git"
+  ],
+  "errorSummary": ""
+}
